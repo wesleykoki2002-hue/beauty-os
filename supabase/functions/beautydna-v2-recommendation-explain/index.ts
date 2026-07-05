@@ -1,4 +1,4 @@
-﻿import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
+import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const VERSION = "beautydna-v2-recommendation-explain-v1";
@@ -11,18 +11,18 @@ const corsHeaders = {
 
 const STEP_LABELS_PT_BR = {
   gentle_cleanser: "limpeza suave",
-  hydrating_lotion: "loção hidratante",
-  barrier_serum: "sérum de barreira",
+  hydrating_lotion: "lo\u00e7\u00e3o hidratante",
+  barrier_serum: "s\u00e9rum de barreira",
   moisturizer: "hidratante",
   sunscreen: "protetor solar",
 };
 
 const STEP_PURPOSE_PT_BR = {
   gentle_cleanser: "remove impurezas sem agredir a barreira da pele",
-  hydrating_lotion: "repõe hidratação leve e prepara a pele para os próximos passos",
-  barrier_serum: "ajuda a fortalecer a barreira e reduzir sensação de ressecamento",
-  moisturizer: "sela a hidratação e ajuda a manter conforto ao longo do dia",
-  sunscreen: "protege a pele contra radiação UV e ajuda a prevenir manchas e sinais de envelhecimento",
+  hydrating_lotion: "rep\u00f5e hidrata\u00e7\u00e3o leve e prepara a pele para os pr\u00f3ximos passos",
+  barrier_serum: "ajuda a fortalecer a barreira e reduzir sensa\u00e7\u00e3o de ressecamento",
+  moisturizer: "sela a hidrata\u00e7\u00e3o e ajuda a manter conforto ao longo do dia",
+  sunscreen: "protege a pele contra radia\u00e7\u00e3o UV e ajuda a prevenir manchas e sinais de envelhecimento",
 };
 
 function jsonResponse(body, status = 200) {
@@ -301,15 +301,15 @@ function buildCautions(profile, productDna, ingredientHighlights) {
   const pregnancyCaution = cleanLower(productDna?.pregnancy_caution);
 
   if (["sensitive", "high", "very_sensitive"].includes(profile.sensitivity_level) && sensitivityRisk === "high") {
-    cautions.push("Este produto tem risco de sensibilidade alto para uma pele sensível.");
+    cautions.push("Este produto tem risco de sensibilidade alto para uma pele sens\u00edvel.");
   }
 
   if (profile.acne_prone && comedogenicRisk === "high") {
-    cautions.push("Este produto tem risco comedogênico alto para uma pele com tendência à acne.");
+    cautions.push("Este produto tem risco comedog\u00eanico alto para uma pele com tend\u00eancia \u00e0 acne.");
   }
 
   if (profile.pregnancy && ["avoid", "caution", "not_recommended", "doctor_only"].includes(pregnancyCaution)) {
-    cautions.push("Este produto tem observação de cautela para gravidez.");
+    cautions.push("Este produto tem observa\u00e7\u00e3o de cautela para gravidez.");
   }
 
   const avoidTerms = profile.avoid_ingredients || [];
@@ -320,7 +320,7 @@ function buildCautions(profile, productDna, ingredientHighlights) {
 
     for (const avoidTerm of avoidTerms) {
       if (normalized.includes(avoidTerm) || name.includes(avoidTerm)) {
-        cautions.push(`Atenção: este produto contém ${ingredient.ingredient_name}, que aparece na lista de ingredientes a evitar.`);
+        cautions.push(`Aten\u00e7\u00e3o: este produto cont\u00e9m ${ingredient.ingredient_name}, que aparece na lista de ingredientes a evitar.`);
       }
     }
   }
@@ -385,24 +385,24 @@ function buildLongExplanation({
 
   const skinText = matchSummary.matched_skin_types.length
     ? `Ele combina com o tipo de pele ${matchSummary.matched_skin_types.join(", ")} informado no perfil.`
-    : "Ele foi escolhido pela função na rotina e pelos dados de Product DNA disponíveis.";
+    : "Ele foi escolhido pela fun\u00e7\u00e3o na rotina e pelos dados de Product DNA dispon\u00edveis.";
 
   const concernText = matchSummary.matched_concerns.length
-    ? `Também conversa com as principais necessidades detectadas: ${matchSummary.matched_concerns.join(", ")}.`
+    ? `Tamb\u00e9m conversa com as principais necessidades detectadas: ${matchSummary.matched_concerns.join(", ")}.`
     : profile.skin_concerns.length
-      ? "Ainda não há correspondência perfeita de preocupação nos dados, então a escolha foi guiada principalmente pelo papel do produto na rotina."
-      : "Como o perfil não trouxe preocupações específicas, a escolha foi guiada pelo papel do produto na rotina.";
+      ? "Ainda n\u00e3o h\u00e1 correspond\u00eancia perfeita de preocupa\u00e7\u00e3o nos dados, ent\u00e3o a escolha foi guiada principalmente pelo papel do produto na rotina."
+      : "Como o perfil n\u00e3o trouxe preocupa\u00e7\u00f5es espec\u00edficas, a escolha foi guiada pelo papel do produto na rotina.";
 
   const ingredientText = ingredientHighlights.length
     ? `Ingredientes aprovados em destaque: ${ingredientHighlights.map((item) => {
         const explanation = item.explanation ? ` (${item.explanation})` : "";
         return `${item.ingredient_name}${explanation}`;
       }).join("; ")}.`
-    : "Ainda não há ingredientes aprovados suficientes para gerar uma explicação de ingredientes para o cliente.";
+    : "Ainda n\u00e3o h\u00e1 ingredientes aprovados suficientes para gerar uma explica\u00e7\u00e3o de ingredientes para o cliente.";
 
   const cautionText = cautions.length
-    ? `Pontos de atenção: ${cautions.join(" ")}`
-    : "Nenhum ponto de atenção importante foi encontrado com os dados aprovados disponíveis.";
+    ? `Pontos de aten\u00e7\u00e3o: ${cautions.join(" ")}`
+    : "Nenhum ponto de aten\u00e7\u00e3o importante foi encontrado com os dados aprovados dispon\u00edveis.";
 
   const matchNotes =
     cleanString(productDna?.beautydna_match_notes) ||
