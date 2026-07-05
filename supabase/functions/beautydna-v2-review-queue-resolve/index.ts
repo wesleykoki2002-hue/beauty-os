@@ -32,6 +32,22 @@ function cleanBoolean(value, fallback = false) {
   return fallback;
 }
 
+function normalizeEvidenceLevel(value) {
+  const allowedEvidenceLevels = new Set([
+    "low",
+    "medium",
+    "high",
+  ]);
+
+  const cleaned = cleanString(value).toLowerCase();
+
+  if (allowedEvidenceLevels.has(cleaned)) {
+    return cleaned;
+  }
+
+  return "medium";
+}
+
 function normalizeIngredientName(value) {
   return cleanString(value)
     .toLowerCase()
@@ -236,7 +252,7 @@ function buildIngredientPayload(queueRecord, ingredientInput, action, reviewedBy
     short_explanation: cleanString(ingredientInput.short_explanation),
     long_explanation: cleanString(ingredientInput.long_explanation),
 
-    evidence_level: cleanString(ingredientInput.evidence_level) || "medium",
+    evidence_level: normalizeEvidenceLevel(ingredientInput.evidence_level),
     source_notes: cleanString(ingredientInput.source_notes),
 
     review_status: action === "approve" ? "approved" : "rejected",
@@ -552,3 +568,4 @@ serve(async (req) => {
     removed_product_ingredient_columns: productIngredientUpdateResult.removed_columns,
   });
 });
+
