@@ -137,35 +137,229 @@ async function callBeautyDnaFunction(
   return json;
 }
 
+const CUSTOMER_LABEL_PT_BR: Record<string, string> = {
+  "dehydration": "desidratação",
+  "barrier_support": "barreira da pele",
+  "barrier support": "barreira da pele",
+  "dryness": "ressecamento",
+  "hydration": "hidratação",
+  "hydration support": "suporte de hidratação",
+  "water-binding support": "retenção de água na pele",
+  "plumping": "efeito de preenchimento hidratante",
+  "skin comfort": "conforto da pele",
+  "test_queue_resolution": "teste interno de aprovação",
+  "dry": "seca",
+  "oily": "oleosa",
+  "normal": "normal",
+  "combination": "mista",
+  "sensitive": "sensível",
+  "low": "baixo",
+  "medium": "médio",
+  "high": "alto",
+  "morning_evening": "manhã e noite",
+  "evening": "noite",
+  "morning": "manhã",
+  "generally_ok": "geralmente seguro",
+  "unknown": "não informado",
+  "acne": "acne",
+  "pigmentation": "manchas",
+  "aging": "sinais de idade",
+  "oiliness": "oleosidade",
+};
+
+const INGREDIENT_DISPLAY_PT_BR: Record<string, string> = {
+  "hyaluronic acid": "Ácido hialurônico",
+  "sodium hyaluronate": "Hialuronato de sódio",
+  "hydrolyzed hyaluronic acid": "Ácido hialurônico hidrolisado",
+  "ceramide np": "Ceramida NP",
+  "ceramide 3": "Ceramida 3",
+  "niacinamide": "Niacinamida",
+  "vitamin b3": "Vitamina B3",
+};
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\function buildSafeCustomerPayload");
+}
+
+function translateCustomerText(value: unknown): string {
+  if (typeof value !== "string") return "";
+
+  let output = value;
+
+  const orderedLabels = Object.entries(CUSTOMER_LABEL_PT_BR)
+    .sort((a, b) => b[0].length - a[0].length);
+
+  for (const [raw, translated] of orderedLabels) {
+    const pattern = new RegExp(`\\b${escapeRegExp(raw)}\\b`, "gi");
+    output = output.replace(pattern, translated);
+  }
+
+  for (const [raw, translated] of Object.entries(INGREDIENT_DISPLAY_PT_BR)) {
+    const pattern = new RegExp(`\\b${escapeRegExp(raw)}\\b`, "gi");
+    output = output.replace(pattern, `${translated} (${raw.replace(/\b\w/g, (char) => char.toUpperCase())})`);
+  }
+
+  return output;
+}
+
+function translateCustomerArray(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  return value
+    .map((item) => translateCustomerText(item))
+    .filter(Boolean);
+}
+
+function getIngredientDisplayName(name: unknown): string {
+  const rawName = cleanString(name);
+  if (!rawName) return "";
+
+  const translated = INGREDIENT_DISPLAY_PT_BR[rawName.toLowerCase()];
+
+  if (!translated) {
+    return translateCustomerText(rawName);
+  }
+
+  return `${translated} (${rawName})`;
+}
+
+function translateProfileForCustomer(profile: unknown): JsonRecord {
+  const source = typeof profile === "object" && profile !== null
+    ? profile as JsonRecord
+    : {};
+
+  return {
+    skin_type: translateCustomerText(source.skin_type),
+    skin_concerns: translateCustomerArray(source.skin_concerns),
+    sensitivity_level: translateCustomerText(source.sensitivity_level),
+    acne_prone: source.acne_prone === true,
+    pregnancy: source.pregnancy === true,
+    avoid_ingredients: translateCustomerArray(source.avoid_ingredients),
+  };
+}
+
+function translateMatchSummaryForCustomer(matchSummary: unknown): JsonRecord {
+  const source = typeof matchSummary === "object" && matchSummary !== null
+    ? matchSummary as JsonRecord
+    : {};
+
+  return {
+    ...source,
+    matched_skin_types: translateCustomerArray(source.matched_skin_types),
+    matched_concerns: translateCustomerArray(source.matched_concerns),
+    routine_step_purpose: translateCustomerText(source.routine_step_purpose),
+    skin_type_fit: translateCustomerArray(source.skin_type_fit),
+    concerns_helped: translateCustomerArray(source.concerns_helped),
+  };
+}
+
+function translateExplanationForCustomer(explanation: unknown): JsonRecord {
+  const source = typeof explanation === "object" && explanation !== null
+    ? explanation as JsonRecord
+    : {};
+
+  return {
+    ...source,
+    step_label: translateCustomerText(source.step_label),
+    short_explanation: translateCustomerText(source.short_explanation),
+    long_explanation: translateCustomerText(source.long_explanation),
+    match_summary: translateMatchSummaryForCustomer(source.match_summary),
+    cautions: translateCustomerArray(source.cautions),
+  };
+}
+
+function translateExplanationMapForCustomer(explanations: unknown): JsonRecord {
+  if (typeof explanations !== "object" || explanations === null) return {};
+
+  const result: JsonRecord = {};
+
+  for (const [step, explanation] of Object.entries(explanations as JsonRecord)) {
+    result[step] = translateExplanationForCustomer(explanation);
+  }
+
+  return result;
+}
+
+function translateIngredientHighlightForCustomer(ingredient: unknown): JsonRecord {
+  const source = typeof ingredient === "object" && ingredient !== null
+    ? ingredient as JsonRecord
+    : {};
+
+  return {
+    ...source,
+    display_name: getIngredientDisplayName(source.ingredient_name),
+    customer_ingredient_name: getIngredientDisplayName(source.ingredient_name),
+    benefits: translateCustomerArray(source.benefits),
+    concerns_helped: translateCustomerArray(source.concerns_helped),
+    explanation: translateCustomerText(source.explanation),
+    evidence_level_label: translateCustomerText(source.evidence_level),
+  };
+}
+
+function translateIngredientHighlightMapForCustomer(highlights: unknown): JsonRecord {
+  if (typeof highlights !== "object" || highlights === null) return {};
+
+  const result: JsonRecord = {};
+
+  for (const [step, items] of Object.entries(highlights as JsonRecord)) {
+    result[step] = Array.isArray(items)
+      ? items.map((item) => translateIngredientHighlightForCustomer(item))
+      : [];
+  }
+
+  return result;
+}
+
+function translateCautionMapForCustomer(cautions: unknown): JsonRecord {
+  if (typeof cautions !== "object" || cautions === null) return {};
+
+  const result: JsonRecord = {};
+
+  for (const [step, items] of Object.entries(cautions as JsonRecord)) {
+    result[step] = translateCustomerArray(items);
+  }
+
+  return result;
+}
+
+function translateWarningsForCustomer(warnings: unknown): string[] {
+  return translateCustomerArray(warnings);
+}
+
 function buildSafeCustomerPayload(
   recommendation: JsonRecord,
   explanation: JsonRecord,
   debug: boolean,
 ): JsonRecord {
+  const translatedExplanations = translateExplanationMapForCustomer(explanation.explanations || {});
+  const translatedIngredientHighlights = translateIngredientHighlightMapForCustomer(explanation.ingredient_highlights || {});
+  const translatedCautions = translateCautionMapForCustomer(explanation.cautions || {});
+
   const safePayload: JsonRecord = {
     ok: true,
     version: VERSION,
-    profile: explanation.profile || recommendation.profile || null,
+    profile: recommendation.profile || null,
+    profile_display: translateProfileForCustomer(explanation.profile || recommendation.profile || null),
     options: {
       language: "pt-BR",
       debug,
     },
     routine: recommendation.routine || {},
     ranked_products: recommendation.ranked_products || {},
-    explanations: explanation.explanations || {},
-    ingredient_highlights: explanation.ingredient_highlights || {},
-    cautions: explanation.cautions || {},
+    explanations: translatedExplanations,
+    ingredient_highlights: translatedIngredientHighlights,
+    cautions: translatedCautions,
     missing_steps: recommendation.missing_steps || [],
-    warnings: [
+    warnings: translateWarningsForCustomer([
       ...(Array.isArray(recommendation.warnings) ? recommendation.warnings : []),
       ...(Array.isArray(explanation.warnings) ? explanation.warnings : []),
-    ],
+    ]),
   };
 
   if (debug) {
     safePayload.debug = {
       recommendation_counts: recommendation.candidate_counts || null,
       explanation_counts: explanation.counts || null,
+      raw_profile: recommendation.profile || null,
       customer_claim_safety_note:
         "Founder debug only. Do not show this object as customer-facing UI.",
     };

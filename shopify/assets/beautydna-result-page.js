@@ -19,6 +19,58 @@
     "sunscreen"
   ];
 
+  const customerLabelTranslations = {
+    dehydration: "desidratação",
+    barrier_support: "barreira da pele",
+    "barrier support": "barreira da pele",
+    dryness: "ressecamento",
+    hydration: "hidratação",
+    "hydration support": "suporte de hidratação",
+    "water-binding support": "retenção de água na pele",
+    plumping: "efeito de preenchimento hidratante",
+    "skin comfort": "conforto da pele",
+    dry: "seca",
+    oily: "oleosa",
+    normal: "normal",
+    combination: "mista",
+    sensitive: "sensível",
+    low: "baixo",
+    medium: "médio",
+    high: "alto",
+    morning_evening: "manhã e noite",
+    evening: "noite",
+    morning: "manhã",
+    generally_ok: "geralmente seguro",
+    unknown: "não informado"
+  };
+
+  const ingredientDisplayNames = {
+    "hyaluronic acid": "Ácido hialurônico",
+    "sodium hyaluronate": "Hialuronato de sódio",
+    "hydrolyzed hyaluronic acid": "Ácido hialurônico hidrolisado",
+    "ceramide np": "Ceramida NP",
+    "ceramide 3": "Ceramida 3",
+    niacinamide: "Niacinamida",
+    "vitamin b3": "Vitamina B3"
+  };
+
+  function translateCustomerLabel(value) {
+    const raw = String(value == null ? "" : value);
+    const direct = customerLabelTranslations[raw.toLowerCase()];
+    return direct || raw;
+  }
+
+  function getIngredientDisplayName(ingredient) {
+    if (!ingredient) return "";
+    if (ingredient.display_name) return ingredient.display_name;
+    if (ingredient.customer_ingredient_name) return ingredient.customer_ingredient_name;
+
+    const rawName = String(ingredient.ingredient_name || "");
+    const translated = ingredientDisplayNames[rawName.toLowerCase()];
+
+    return translated ? `${translated} (${rawName})` : rawName;
+  }
+
   const fallbackProfile = {
     skin_type: "dry",
     skin_concerns: ["dehydration", "barrier_support", "dryness"],
@@ -98,10 +150,10 @@
 
     profileEl.innerHTML = `
       <h2>Seu perfil BeautyDNA</h2>
-      <p>Tipo de pele: <strong>${escapeHtml(profile.skin_type || "nao informado")}</strong></p>
-      <p>Sensibilidade: <strong>${escapeHtml(profile.sensitivity_level || "normal")}</strong></p>
+      <p>Tipo de pele: <strong>${escapeHtml(translateCustomerLabel(profile.skin_type || "nao informado"))}</strong></p>
+      <p>Sensibilidade: <strong>${escapeHtml(translateCustomerLabel(profile.sensitivity_level || "normal"))}</strong></p>
       <div class="beautydna-profile-tags">
-        ${concerns.map((concern) => `<span class="beautydna-tag">${escapeHtml(concern)}</span>`).join("")}
+        ${concerns.map((concern) => `<span class="beautydna-tag">${escapeHtml(translateCustomerLabel(concern))}</span>`).join("")}
       </div>
     `;
 
@@ -154,7 +206,7 @@
           ${
             highlights.length
               ? `<div class="beautydna-ingredient-tags">
-                  ${highlights.slice(0, 4).map((ingredient) => `<span class="beautydna-tag">${escapeHtml(ingredient.ingredient_name)}</span>`).join("")}
+                  ${highlights.slice(0, 4).map((ingredient) => `<span class="beautydna-tag">${escapeHtml(getIngredientDisplayName(ingredient))}</span>`).join("")}
                 </div>`
               : ""
           }
@@ -295,6 +347,7 @@
       throw new Error(payload.message || payload.error || "Erro ao gerar resultado BeautyDNA.");
     }
 
+    renderProfile(payload.profile_display || profile);
     hideStatus();
     renderRoutine(payload);
   }
