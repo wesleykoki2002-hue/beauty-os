@@ -177,7 +177,9 @@ async function saveProductDna(supabase, productId, productDna, sourceType, sourc
     main_concerns_it_helps: cleanArray(productDna.main_concerns_it_helps),
     things_to_avoid: cleanArray(productDna.things_to_avoid),
     recommended_routine_step: cleanString(productDna.recommended_routine_step),
-    usage_timing: cleanString(productDna.usage_timing),
+    usage_timing: Array.isArray(productDna.usage_timing)
+      ? cleanArray(productDna.usage_timing)
+      : (cleanString(productDna.usage_timing) ? [cleanString(productDna.usage_timing)] : []),
     sensitivity_risk: cleanString(productDna.sensitivity_risk) || "unknown",
     comedogenic_risk: cleanString(productDna.comedogenic_risk) || "unknown",
     fragrance_status: cleanString(productDna.fragrance_status) || "unknown",
@@ -464,3 +466,4 @@ serve(async (req) => {
     removed_product_dna_columns: productDnaResult.removed_columns,
   });
 });
+
