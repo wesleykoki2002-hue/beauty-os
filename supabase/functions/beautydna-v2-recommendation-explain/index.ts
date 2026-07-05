@@ -30,7 +30,7 @@ function jsonResponse(body, status = 200) {
     status,
     headers: {
       ...corsHeaders,
-      "Content-Type": "application/json",
+      "Content-Type": "application/json; charset=utf-8",
     },
   });
 }
@@ -134,7 +134,7 @@ function getStepLabel(step, language = "pt-BR") {
 
 function getStepPurpose(step, language = "pt-BR") {
   if (language === "pt-BR") {
-    return STEP_PURPOSE_PT_BR[step] || "tem uma função específica na rotina personalizada";
+    return STEP_PURPOSE_PT_BR[step] || "tem uma funﾃｧﾃ｣o especﾃｭfica na rotina personalizada";
   }
 
   return "has a specific role in the personalized routine";
