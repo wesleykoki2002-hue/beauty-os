@@ -1,0 +1,264 @@
+<section
+  class="beautydna-result-page"
+  data-beautydna-result-page
+  data-endpoint="{{ section.settings.proxy_endpoint | escape }}"
+  data-debug="{{ section.settings.debug_mode }}"
+>
+  <div class="beautydna-result-shell">
+    <div class="beautydna-result-hero">
+      <p class="beautydna-eyebrow">{{ section.settings.eyebrow }}</p>
+      <h1>{{ section.settings.heading }}</h1>
+      <p>{{ section.settings.subheading }}</p>
+    </div>
+
+    <div class="beautydna-result-status" data-beautydna-status>
+      Preparando sua rotina BeautyDNA...
+    </div>
+
+    <div class="beautydna-profile-card" data-beautydna-profile hidden></div>
+
+    <div class="beautydna-routine-grid" data-beautydna-routine hidden></div>
+
+    <div class="beautydna-cart-actions" data-beautydna-cart-actions hidden>
+      <button type="button" class="beautydna-add-all" data-beautydna-add-all>
+        Adicionar rotina ao carrinho
+      </button>
+      <p class="beautydna-cart-note">
+        Produtos sem variante Shopify conectada aparecer&atilde;o como indispon&iacute;veis para carrinho.
+      </p>
+    </div>
+  </div>
+</section>
+
+<style>
+  .beautydna-result-page {
+    background: linear-gradient(180deg, #fff7fa 0%, #ffffff 100%);
+    padding: 40px 16px;
+  }
+
+  .beautydna-result-shell {
+    max-width: 1120px;
+    margin: 0 auto;
+  }
+
+  .beautydna-result-hero {
+    text-align: center;
+    margin-bottom: 28px;
+  }
+
+  .beautydna-eyebrow {
+    font-size: 13px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: #d94d7b;
+    margin-bottom: 10px;
+  }
+
+  .beautydna-result-hero h1 {
+    font-size: clamp(32px, 5vw, 58px);
+    line-height: 1.02;
+    margin: 0 0 14px;
+    color: #2c2c2c;
+  }
+
+  .beautydna-result-hero p {
+    max-width: 720px;
+    margin: 0 auto;
+    color: #5d5d5d;
+    font-size: 17px;
+  }
+
+  .beautydna-result-status,
+  .beautydna-profile-card,
+  .beautydna-product-card {
+    border: 1px solid rgba(217, 77, 123, .18);
+    background: rgba(255,255,255,.9);
+    border-radius: 24px;
+    box-shadow: 0 18px 50px rgba(44,44,44,.08);
+  }
+
+  .beautydna-result-status {
+    padding: 18px 20px;
+    text-align: center;
+    color: #5d5d5d;
+  }
+
+  .beautydna-profile-card {
+    padding: 20px;
+    margin-bottom: 22px;
+  }
+
+  .beautydna-profile-card h2,
+  .beautydna-product-card h3 {
+    margin: 0 0 10px;
+    color: #2c2c2c;
+  }
+
+  .beautydna-profile-tags,
+  .beautydna-ingredient-tags {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+  }
+
+  .beautydna-tag {
+    background: #ffe0ea;
+    color: #7b2946;
+    border-radius: 999px;
+    padding: 7px 11px;
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .beautydna-routine-grid {
+    display: grid;
+    gap: 18px;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  }
+
+  .beautydna-product-card {
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .beautydna-product-image {
+    aspect-ratio: 1 / 1;
+    background: #fff0f5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #d94d7b;
+    font-weight: 800;
+  }
+
+  .beautydna-product-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .beautydna-product-body {
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    flex: 1;
+  }
+
+  .beautydna-step-label {
+    font-size: 12px;
+    font-weight: 800;
+    color: #d94d7b;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+  }
+
+  .beautydna-product-brand,
+  .beautydna-product-price,
+  .beautydna-explanation,
+  .beautydna-caution,
+  .beautydna-unavailable {
+    color: #5d5d5d;
+    font-size: 14px;
+    line-height: 1.45;
+  }
+
+  .beautydna-product-price {
+    font-weight: 800;
+    color: #2c2c2c;
+  }
+
+  .beautydna-add-button,
+  .beautydna-add-all {
+    appearance: none;
+    border: 0;
+    border-radius: 999px;
+    background: #2c2c2c;
+    color: #fff;
+    padding: 13px 18px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: transform .18s ease, opacity .18s ease;
+  }
+
+  .beautydna-add-button:hover,
+  .beautydna-add-all:hover {
+    transform: translateY(-1px);
+  }
+
+  .beautydna-add-button[disabled] {
+    opacity: .45;
+    cursor: not-allowed;
+  }
+
+  .beautydna-cart-actions {
+    margin-top: 22px;
+    text-align: center;
+  }
+
+  .beautydna-cart-note {
+    color: #777;
+    font-size: 13px;
+    margin-top: 10px;
+  }
+
+  .beautydna-caution {
+    background: #fff8e5;
+    border-radius: 14px;
+    padding: 10px 12px;
+  }
+
+  .beautydna-unavailable {
+    background: #f4f4f4;
+    border-radius: 14px;
+    padding: 10px 12px;
+  }
+</style>
+
+<script src="{{ 'beautydna-result-page.js' | asset_url }}" defer></script>
+
+{% schema %}
+{
+  "name": "BeautyDNA Result Page",
+  "settings": [
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow",
+      "default": "BeautyDNA"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Sua rotina japonesa personalizada"
+    },
+    {
+      "type": "textarea",
+      "id": "subheading",
+      "label": "Subheading",
+      "default": "Criamos uma rotina com base no seu perfil, nas necessidades da sua pele e na inteligencia de ingredientes aprovados do BeautyDNA."
+    },
+    {
+      "type": "text",
+      "id": "proxy_endpoint",
+      "label": "BeautyDNA proxy endpoint",
+      "default": "https://hidsyvanaipxxyyhjgmc.supabase.co/functions/v1/beautydna-v2-shopify-result"
+    },
+    {
+      "type": "checkbox",
+      "id": "debug_mode",
+      "label": "Founder debug mode",
+      "default": false
+    }
+  ],
+  "presets": [
+    {
+      "name": "BeautyDNA Result Page"
+    }
+  ]
+}
+{% endschema %}

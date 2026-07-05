@@ -1,0 +1,17 @@
+{
+  "sections": {
+    "beautydna_result_page": {
+      "type": "beautydna-result-page",
+      "settings": {
+        "eyebrow": "BeautyDNA",
+        "heading": "Sua rotina japonesa personalizada",
+        "subheading": "Criamos uma rotina com base no seu perfil, nas necessidades da sua pele e na inteligencia de ingredientes aprovados do BeautyDNA.",
+        "proxy_endpoint": "https://hidsyvanaipxxyyhjgmc.supabase.co/functions/v1/beautydna-v2-shopify-result",
+        "debug_mode": false
+      }
+    }
+  },
+  "order": [
+    "beautydna_result_page"
+  ]
+}
