@@ -1,0 +1,221 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "beauty-intelligence-ingredient-v1",
+  "title": "Beauty Intelligence Ingredient v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "ingredient",
+    "aliases",
+    "functions",
+    "formulation_properties",
+    "claims",
+    "concentration_rules",
+    "profile_fit",
+    "environment_fit",
+    "safety_profile",
+    "product_role_fit",
+    "regulatory_status",
+    "interactions",
+    "sources",
+    "quality_control"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "beauty-intelligence-ingredient-v1"
+    },
+    "ingredient": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "canonical_inci_name",
+        "normalized_ingredient_name",
+        "ingredient_slug",
+        "preferred_display_names",
+        "identity_codes",
+        "classification",
+        "flags",
+        "explanations"
+      ],
+      "properties": {
+        "canonical_inci_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "normalized_ingredient_name": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:_[a-z0-9]+)*$"
+        },
+        "ingredient_slug": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+        },
+        "preferred_display_names": {
+          "type": "object",
+          "required": [
+            "en",
+            "pt_br",
+            "ja"
+          ],
+          "properties": {
+            "en": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "pt_br": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "ja": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
+        },
+        "japanese_labeling_name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "identity_codes": {
+          "type": "object"
+        },
+        "classification": {
+          "type": "object"
+        },
+        "flags": {
+          "type": "object"
+        },
+        "explanations": {
+          "type": "object"
+        }
+      }
+    },
+    "aliases": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "functions": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "formulation_properties": {
+      "type": "object"
+    },
+    "claims": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "concentration_rules": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "profile_fit": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "environment_fit": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "safety_profile": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "product_role_fit": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "regulatory_status": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "interactions": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "sources": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "quality_control": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "missing_required_fields",
+        "conflicting_findings",
+        "unverified_claims",
+        "requires_specialist_review",
+        "research_confidence",
+        "review_status"
+      ],
+      "properties": {
+        "missing_required_fields": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "conflicting_findings": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "unverified_claims": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "requires_specialist_review": {
+          "type": "boolean"
+        },
+        "research_confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "review_status": {
+          "enum": [
+            "needs_review",
+            "in_review",
+            "approved",
+            "rejected",
+            "superseded"
+          ]
+        }
+      }
+    }
+  }
+}

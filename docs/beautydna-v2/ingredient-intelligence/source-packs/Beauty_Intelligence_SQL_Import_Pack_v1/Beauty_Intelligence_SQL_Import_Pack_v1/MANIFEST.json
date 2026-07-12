@@ -1,0 +1,72 @@
+{
+  "package": "Beauty Intelligence SQL Import Pack v1",
+  "ingredient_seed_count": 150,
+  "research_queue_count": 150,
+  "files": [
+    {
+      "file": "000_preflight_and_backup_checks.sql",
+      "bytes": 1849,
+      "sha256": "37981e05973ad2f0985476f89168bff2fd2b9faa863bcd779562c6b5927da916"
+    },
+    {
+      "file": "001_beauty_intelligence_foundation.sql",
+      "bytes": 26666,
+      "sha256": "47329d4333da1d50e78e9c1a6a47bfc885aa648d6e3b7931908cc51f31909f87"
+    },
+    {
+      "file": "002_controlled_vocabularies.sql",
+      "bytes": 11800,
+      "sha256": "1dd0b2f3613ba2ec79f2eda1352923c2ecf24885786fb8df7b20fe97dbaede8c"
+    },
+    {
+      "file": "003_core_150_identity_seed.sql",
+      "bytes": 65939,
+      "sha256": "0cbf2d208442722a9661bc9043f03046b702ba591f826b8f1e630a5cdd735d32"
+    },
+    {
+      "file": "004_research_payload_staging.sql",
+      "bytes": 3979,
+      "sha256": "781fdd51f96f076111012a2781a17be74f0dedb11cc6b71f2a240cbb94e49546"
+    },
+    {
+      "file": "005_validation_and_coverage.sql",
+      "bytes": 4266,
+      "sha256": "a73a3bad144edfa436f4e8e70dbcaa5fa879d44e011112a70331c636acb3edbe"
+    },
+    {
+      "file": "006_optional_rls_template.sql",
+      "bytes": 781,
+      "sha256": "302c18f3740d1916e9cf78255ca4943b645147ff404f3a16388e007c156c8f46"
+    },
+    {
+      "file": "FIELD_MAPPING.md",
+      "bytes": 2092,
+      "sha256": "59d985a3d4458e64eeaeb4cd40559dddcad40bb0b214a502cedb1fcb6c965c01"
+    },
+    {
+      "file": "README.md",
+      "bytes": 3725,
+      "sha256": "4ac113b2e055af69f80281c48487ae64f723cc8cca2430660951d739bc6b2583"
+    },
+    {
+      "file": "SOURCE_SPECIFICATION.txt",
+      "bytes": 39527,
+      "sha256": "3a09d93dff49c89c1b614adba4d1ded06caf4e9af9c1237a7820d2712adc92f9"
+    },
+    {
+      "file": "beauty_intelligence_ingredient_v1.schema.json",
+      "bytes": 4635,
+      "sha256": "f69b441f32b21fe3ded5cd1663aba733d3b468a9ace8c62fdea778bb48a1fe6b"
+    },
+    {
+      "file": "core_150_identity_seed.json",
+      "bytes": 123794,
+      "sha256": "c4d378cd8de9aac210a3462b469b608fa17c16c08fa3ccbe75c71eb11a37ab35"
+    },
+    {
+      "file": "core_150_research_queue.jsonl",
+      "bytes": 285911,
+      "sha256": "d02748e8148cbebcb0c108be8327df4e5bc5e8decf1a256243f46b7854eb68f2"
+    }
+  ]
+}

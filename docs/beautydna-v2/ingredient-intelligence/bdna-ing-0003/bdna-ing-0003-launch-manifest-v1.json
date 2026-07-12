@@ -1,0 +1,825 @@
+{
+  "build_id": "BDNA-ING-0003",
+  "build_title": "Real launch catalog Ingredient Intelligence coverage",
+  "project": "BeautyDNA / Beauty OS",
+  "project_key": "beautydna",
+  "module_key": "ingredient-intelligence",
+  "source_type": "beautydna_launch_catalog",
+  "source_key": "BDNA-ING-0003-launch-batch-v1",
+  "continue_on_error": false,
+  "max_items": 5,
+  "shopify_linking_deferred": true,
+  "formula_market": "JP",
+  "formula_verified_at": "2026-07-12",
+  "products": [
+    {
+      "source_type": "beautydna_launch_catalog",
+      "source_key": "BDNA-ING-0003-gentle-cleanser-curel-4901301269348",
+      "product": {
+        "sku": "BDNA-ING-0003-CLEANSER-001",
+        "brand": "Curél",
+        "product_title": "Curél Intensive Moisture Care Foaming Facial Wash 150ml",
+        "product_name": "Curél 潤浸保湿 泡洗顔料 150ml",
+        "category": "skincare",
+        "product_role": "gentle_cleanser",
+        "routine_step": "gentle_cleanser",
+        "price": 0,
+        "currency": "BRL",
+        "handle": "curel-intensive-moisture-care-foaming-facial-wash-150ml",
+        "shopify_status": "needs_shopify_creation",
+        "shopify_product_id": null,
+        "shopify_variant_id": null,
+        "product_url": "https://www.kao-kirei.com/ja/item/kbb/curel/4901301269348/",
+        "product_image_url": null,
+        "ingredient_source_url": "https://www.kao-kirei.com/ja/item/kbb/curel/4901301269348/",
+        "ingredient_source_type": "manufacturer_official",
+        "ingredient_source_retrieved_at": "2026-07-12",
+        "formula_market": "JP",
+        "ingredient_language": "ja_labeling_names",
+        "ingredient_names": [
+          "グリチルリチン酸2K",
+          "精製水",
+          "グリセリン",
+          "ラウロイルアスパラギン酸Na液",
+          "マルチトール",
+          "ラウリルヒドロキシスルホベタイン液",
+          "PG",
+          "PEG6000",
+          "ヤシ油脂肪酸アシルグルタミン酸Na",
+          "ステアリン酸POEソルビタン",
+          "グリセリルエチルヘキシルエーテル",
+          "水酸化カリウム液（A）",
+          "エデト酸塩",
+          "フェノキシエタノール",
+          "パラベン"
+        ]
+      },
+      "product_dna": {
+        "skin_type_fit": [
+          "dry",
+          "normal",
+          "combination",
+          "sensitive"
+        ],
+        "main_concerns_it_helps": [
+          "dehydration",
+          "dryness",
+          "barrier_support",
+          "sensitivity"
+        ],
+        "things_to_avoid": [
+          "known_paraben_sensitivity"
+        ],
+        "key_ingredients": [
+          "Glycyrrhizic Acid 2K",
+          "Glycerin"
+        ],
+        "ingredient_flags": [
+          "rinse_off",
+          "japan_quasi_drug",
+          "fragrance_free",
+          "colorant_free"
+        ],
+        "recommended_routine_step": "gentle_cleanser",
+        "usage_timing": [
+          "morning_evening"
+        ],
+        "sensitivity_risk": "low",
+        "comedogenic_risk": "low",
+        "fragrance_status": "fragrance_free",
+        "alcohol_status": "alcohol_free",
+        "pregnancy_caution": "unknown",
+        "beautydna_match_notes": "Provisional launch-catalog Product DNA based on the current Japanese manufacturer formula. Final approval requires Beauty OS human review.",
+        "source_summary": "Kao official Japanese product page and ingredient list, retrieved 2026-07-12.",
+        "research_confidence": "medium",
+        "approval_status": "needs_review",
+        "dna_payload": {
+          "build_id": "BDNA-ING-0003",
+          "formula_market": "JP",
+          "formula_verified_at": "2026-07-12",
+          "ingredient_language": "ja_labeling_names",
+          "shopify_link_pending": true
+        }
+      },
+      "beautydna_product_dna_payload": {
+        "skin_type_fit": [
+          "dry",
+          "normal",
+          "combination",
+          "sensitive"
+        ],
+        "main_concerns_it_helps": [
+          "dehydration",
+          "dryness",
+          "barrier_support",
+          "sensitivity"
+        ],
+        "things_to_avoid": [
+          "known_paraben_sensitivity"
+        ],
+        "key_ingredients": [
+          "Glycyrrhizic Acid 2K",
+          "Glycerin"
+        ],
+        "ingredient_flags": [
+          "rinse_off",
+          "japan_quasi_drug",
+          "fragrance_free",
+          "colorant_free"
+        ],
+        "recommended_routine_step": "gentle_cleanser",
+        "usage_timing": [
+          "morning_evening"
+        ],
+        "sensitivity_risk": "low",
+        "comedogenic_risk": "low",
+        "fragrance_status": "fragrance_free",
+        "alcohol_status": "alcohol_free",
+        "pregnancy_caution": "unknown",
+        "beautydna_match_notes": "Provisional launch-catalog Product DNA based on the current Japanese manufacturer formula. Final approval requires Beauty OS human review.",
+        "source_summary": "Kao official Japanese product page and ingredient list, retrieved 2026-07-12.",
+        "research_confidence": "medium",
+        "approval_status": "needs_review",
+        "dna_payload": {
+          "build_id": "BDNA-ING-0003",
+          "formula_market": "JP",
+          "formula_verified_at": "2026-07-12",
+          "ingredient_language": "ja_labeling_names",
+          "shopify_link_pending": true
+        }
+      }
+    },
+    {
+      "source_type": "beautydna_launch_catalog",
+      "source_key": "BDNA-ING-0003-hydrating-lotion-hada-labo-167012",
+      "product": {
+        "sku": "BDNA-ING-0003-LOTION-001",
+        "brand": "Hada Labo",
+        "product_title": "Hada Labo Gokujyun Premium Hyaluronic Lotion 170ml",
+        "product_name": "肌ラボ 極潤プレミアム ヒアルロン液 170ml",
+        "category": "skincare",
+        "product_role": "hydrating_lotion",
+        "routine_step": "hydrating_lotion",
+        "price": 0,
+        "currency": "BRL",
+        "handle": "hada-labo-gokujyun-premium-hyaluronic-lotion-170ml",
+        "shopify_status": "needs_shopify_creation",
+        "shopify_product_id": null,
+        "shopify_variant_id": null,
+        "product_url": "https://www.shop.rohto.co.jp/category/skincare/hadalabo/gokujyun-premium/167012.html",
+        "product_image_url": null,
+        "ingredient_source_url": "https://www.shop.rohto.co.jp/category/skincare/hadalabo/gokujyun-premium/167012.html",
+        "ingredient_source_type": "manufacturer_official",
+        "ingredient_source_retrieved_at": "2026-07-12",
+        "formula_market": "JP",
+        "ingredient_language": "ja_labeling_names",
+        "ingredient_names": [
+          "水",
+          "BG",
+          "ペンチレングリコール",
+          "PPG-10メチルグルコース",
+          "DPG",
+          "ジグリセリン",
+          "ヒアルロン酸Na",
+          "加水分解ヒアルロン酸",
+          "アセチルヒアルロン酸Na",
+          "ヒアルロン酸ヒドロキシプロピルトリモニウム",
+          "ヒアルロン酸クロスポリマーNa",
+          "乳酸球菌/ヒアルロン酸発酵液",
+          "加水分解ヒアルロン酸Na",
+          "加水分解ヒアルロン酸アルキル（C12-13）グリセリル",
+          "スイゼンジノリ多糖体",
+          "ヒドロキシエチルウレア",
+          "ポリクオタニウム-51",
+          "加水分解水添デンプン",
+          "グリコシルトレハロース",
+          "ソルビトール",
+          "キシリチルグルコシド",
+          "無水キシリトール",
+          "イソペンチルジオール",
+          "キシリトール",
+          "カルボマー",
+          "キサンタンガム",
+          "コハク酸2Na",
+          "プロパンジオール",
+          "水酸化K",
+          "コハク酸",
+          "EDTA-2Na",
+          "カプリルヒドロキサム酸",
+          "フェノキシエタノール"
+        ]
+      },
+      "product_dna": {
+        "skin_type_fit": [
+          "dry",
+          "normal",
+          "combination",
+          "oily",
+          "sensitive"
+        ],
+        "main_concerns_it_helps": [
+          "dehydration",
+          "dryness",
+          "barrier_support"
+        ],
+        "things_to_avoid": [
+          "known_hyaluronic_acid_sensitivity"
+        ],
+        "key_ingredients": [
+          "Hyaluronic Acid derivatives",
+          "Sacran",
+          "Hydroxyethyl Urea"
+        ],
+        "ingredient_flags": [
+          "leave_on",
+          "fragrance_free",
+          "colorant_free",
+          "ethanol_free",
+          "paraben_free",
+          "mineral_oil_free"
+        ],
+        "recommended_routine_step": "hydrating_lotion",
+        "usage_timing": [
+          "morning_evening"
+        ],
+        "sensitivity_risk": "low",
+        "comedogenic_risk": "low",
+        "fragrance_status": "fragrance_free",
+        "alcohol_status": "alcohol_free",
+        "pregnancy_caution": "unknown",
+        "beautydna_match_notes": "Provisional launch-catalog Product DNA based on the current Japanese manufacturer formula. Final approval requires Beauty OS human review.",
+        "source_summary": "Rohto official Japanese product page and ingredient list, retrieved 2026-07-12.",
+        "research_confidence": "medium",
+        "approval_status": "needs_review",
+        "dna_payload": {
+          "build_id": "BDNA-ING-0003",
+          "formula_market": "JP",
+          "formula_verified_at": "2026-07-12",
+          "ingredient_language": "ja_labeling_names",
+          "shopify_link_pending": true
+        }
+      },
+      "beautydna_product_dna_payload": {
+        "skin_type_fit": [
+          "dry",
+          "normal",
+          "combination",
+          "oily",
+          "sensitive"
+        ],
+        "main_concerns_it_helps": [
+          "dehydration",
+          "dryness",
+          "barrier_support"
+        ],
+        "things_to_avoid": [
+          "known_hyaluronic_acid_sensitivity"
+        ],
+        "key_ingredients": [
+          "Hyaluronic Acid derivatives",
+          "Sacran",
+          "Hydroxyethyl Urea"
+        ],
+        "ingredient_flags": [
+          "leave_on",
+          "fragrance_free",
+          "colorant_free",
+          "ethanol_free",
+          "paraben_free",
+          "mineral_oil_free"
+        ],
+        "recommended_routine_step": "hydrating_lotion",
+        "usage_timing": [
+          "morning_evening"
+        ],
+        "sensitivity_risk": "low",
+        "comedogenic_risk": "low",
+        "fragrance_status": "fragrance_free",
+        "alcohol_status": "alcohol_free",
+        "pregnancy_caution": "unknown",
+        "beautydna_match_notes": "Provisional launch-catalog Product DNA based on the current Japanese manufacturer formula. Final approval requires Beauty OS human review.",
+        "source_summary": "Rohto official Japanese product page and ingredient list, retrieved 2026-07-12.",
+        "research_confidence": "medium",
+        "approval_status": "needs_review",
+        "dna_payload": {
+          "build_id": "BDNA-ING-0003",
+          "formula_market": "JP",
+          "formula_verified_at": "2026-07-12",
+          "ingredient_language": "ja_labeling_names",
+          "shopify_link_pending": true
+        }
+      }
+    },
+    {
+      "source_type": "beautydna_launch_catalog",
+      "source_key": "BDNA-ING-0003-barrier-serum-etvos-cn10694",
+      "product": {
+        "sku": "BDNA-ING-0003-SERUM-001",
+        "brand": "ETVOS",
+        "product_title": "ETVOS Moisturizing Serum 50ml",
+        "product_name": "ETVOS モイスチャライジングセラム 50ml",
+        "category": "skincare",
+        "product_role": "barrier_serum",
+        "routine_step": "barrier_serum",
+        "price": 0,
+        "currency": "BRL",
+        "handle": "etvos-moisturizing-serum-50ml",
+        "shopify_status": "needs_shopify_creation",
+        "shopify_product_id": null,
+        "shopify_variant_id": null,
+        "product_url": "https://etvos.com/shop/g/gCN10694-000/",
+        "product_image_url": null,
+        "ingredient_source_url": "https://etvos.com/shop/g/gCN10694-000/",
+        "ingredient_source_type": "manufacturer_official",
+        "ingredient_source_retrieved_at": "2026-07-12",
+        "formula_market": "JP",
+        "ingredient_language": "ja_labeling_names",
+        "ingredient_names": [
+          "水",
+          "グリセリン",
+          "ラベンダー花水",
+          "BG",
+          "1,2-ヘキサンジオール",
+          "セラミドAG",
+          "セラミドAP",
+          "セラミドEOP",
+          "セラミドNG",
+          "セラミドNP",
+          "PCA-Na",
+          "セリン",
+          "グリシン",
+          "グルタミン酸",
+          "アラニン",
+          "アルギニン",
+          "トレオニン",
+          "プロリン",
+          "タウリン",
+          "ロイシン",
+          "バリン",
+          "イソロイシン",
+          "フェニルアラニン",
+          "リシンHCl",
+          "ヒスチジンHCl",
+          "ヒアルロン酸Na",
+          "スクワラン",
+          "ホホバ種子油",
+          "メドウフォーム種子油",
+          "シア脂",
+          "アロエベラ葉エキス",
+          "クズ根エキス",
+          "クロレラエキス",
+          "ローマカミツレ花エキス",
+          "トウキンセンカ花エキス",
+          "ヤグルマギク花エキス",
+          "カミツレ花エキス",
+          "セイヨウオトギリソウ花/葉/茎エキス",
+          "フユボダイジュ花エキス",
+          "アラントイン",
+          "フィトスフィンゴシン",
+          "コレステロール",
+          "フィトステロールズ",
+          "ベヘニルアルコール",
+          "水酸化K",
+          "キサンタンガム",
+          "カルボマー",
+          "水添レシチン",
+          "ペンタステアリン酸ポリグリセリル-10",
+          "ラウロイルラクチレートNa",
+          "ステアロイルラクチレートNa",
+          "ラベンダー油",
+          "エチルヘキシルグリセリン",
+          "フェノキシエタノール"
+        ]
+      },
+      "product_dna": {
+        "skin_type_fit": [
+          "dry",
+          "normal",
+          "combination",
+          "sensitive"
+        ],
+        "main_concerns_it_helps": [
+          "dehydration",
+          "dryness",
+          "barrier_support",
+          "sensitivity"
+        ],
+        "things_to_avoid": [
+          "known_lavender_sensitivity",
+          "fragrance_sensitivity"
+        ],
+        "key_ingredients": [
+          "Ceramide AG",
+          "Ceramide AP",
+          "Ceramide EOP",
+          "Ceramide NG",
+          "Ceramide NP",
+          "Sodium Hyaluronate"
+        ],
+        "ingredient_flags": [
+          "leave_on",
+          "essential_oil_present",
+          "human_type_ceramides",
+          "airless_packaging"
+        ],
+        "recommended_routine_step": "barrier_serum",
+        "usage_timing": [
+          "morning_evening"
+        ],
+        "sensitivity_risk": "low",
+        "comedogenic_risk": "unknown",
+        "fragrance_status": "essential_oil_fragrance",
+        "alcohol_status": "alcohol_free",
+        "pregnancy_caution": "unknown",
+        "beautydna_match_notes": "Provisional launch-catalog Product DNA based on the current Japanese manufacturer formula. Lavender-derived fragrance components require sensitivity-aware matching. Final approval requires Beauty OS human review.",
+        "source_summary": "ETVOS official Japanese product page and full ingredient list, retrieved 2026-07-12.",
+        "research_confidence": "medium",
+        "approval_status": "needs_review",
+        "dna_payload": {
+          "build_id": "BDNA-ING-0003",
+          "formula_market": "JP",
+          "formula_verified_at": "2026-07-12",
+          "ingredient_language": "ja_labeling_names",
+          "shopify_link_pending": true
+        }
+      },
+      "beautydna_product_dna_payload": {
+        "skin_type_fit": [
+          "dry",
+          "normal",
+          "combination",
+          "sensitive"
+        ],
+        "main_concerns_it_helps": [
+          "dehydration",
+          "dryness",
+          "barrier_support",
+          "sensitivity"
+        ],
+        "things_to_avoid": [
+          "known_lavender_sensitivity",
+          "fragrance_sensitivity"
+        ],
+        "key_ingredients": [
+          "Ceramide AG",
+          "Ceramide AP",
+          "Ceramide EOP",
+          "Ceramide NG",
+          "Ceramide NP",
+          "Sodium Hyaluronate"
+        ],
+        "ingredient_flags": [
+          "leave_on",
+          "essential_oil_present",
+          "human_type_ceramides",
+          "airless_packaging"
+        ],
+        "recommended_routine_step": "barrier_serum",
+        "usage_timing": [
+          "morning_evening"
+        ],
+        "sensitivity_risk": "low",
+        "comedogenic_risk": "unknown",
+        "fragrance_status": "essential_oil_fragrance",
+        "alcohol_status": "alcohol_free",
+        "pregnancy_caution": "unknown",
+        "beautydna_match_notes": "Provisional launch-catalog Product DNA based on the current Japanese manufacturer formula. Lavender-derived fragrance components require sensitivity-aware matching. Final approval requires Beauty OS human review.",
+        "source_summary": "ETVOS official Japanese product page and full ingredient list, retrieved 2026-07-12.",
+        "research_confidence": "medium",
+        "approval_status": "needs_review",
+        "dna_payload": {
+          "build_id": "BDNA-ING-0003",
+          "formula_market": "JP",
+          "formula_verified_at": "2026-07-12",
+          "ingredient_language": "ja_labeling_names",
+          "shopify_link_pending": true
+        }
+      }
+    },
+    {
+      "source_type": "beautydna_launch_catalog",
+      "source_key": "BDNA-ING-0003-moisturizer-curel-4901301236210",
+      "product": {
+        "sku": "BDNA-ING-0003-MOISTURIZER-001",
+        "brand": "Curél",
+        "product_title": "Curél Intensive Moisture Facial Cream 40g",
+        "product_name": "Curél 潤浸保湿 フェイスクリーム 40g",
+        "category": "skincare",
+        "product_role": "moisturizer",
+        "routine_step": "moisturizer",
+        "price": 0,
+        "currency": "BRL",
+        "handle": "curel-intensive-moisture-facial-cream-40g",
+        "shopify_status": "needs_shopify_creation",
+        "shopify_product_id": null,
+        "shopify_variant_id": null,
+        "product_url": "https://www.kao-kirei.com/ja/item/kbb/curel/4901301236210/",
+        "product_image_url": null,
+        "ingredient_source_url": "https://www.kao-kirei.com/ja/item/kbb/curel/4901301236210/",
+        "ingredient_source_type": "manufacturer_official",
+        "ingredient_source_retrieved_at": "2026-07-12",
+        "formula_market": "JP",
+        "ingredient_language": "ja_labeling_names",
+        "ingredient_names": [
+          "アラントイン",
+          "水",
+          "グリセリン",
+          "ヘキサデシロキシPGヒドロキシエチルヘキサデカナミド",
+          "トリシロキサン",
+          "ジメチコン",
+          "α-オレフィンオリゴマー",
+          "POE・ジメチコン共重合体",
+          "ユーカリエキス",
+          "硫酸Mg",
+          "BG",
+          "イソステアリルグリセリルエーテル",
+          "コハク酸",
+          "水酸化ナトリウム液",
+          "パラベン"
+        ]
+      },
+      "product_dna": {
+        "skin_type_fit": [
+          "dry",
+          "normal",
+          "combination",
+          "sensitive"
+        ],
+        "main_concerns_it_helps": [
+          "dryness",
+          "barrier_support",
+          "sensitivity",
+          "dehydration"
+        ],
+        "things_to_avoid": [
+          "known_paraben_sensitivity"
+        ],
+        "key_ingredients": [
+          "Allantoin",
+          "Pseudo-Ceramide",
+          "Glycerin"
+        ],
+        "ingredient_flags": [
+          "leave_on",
+          "japan_quasi_drug",
+          "fragrance_free",
+          "colorant_free",
+          "ethanol_free"
+        ],
+        "recommended_routine_step": "moisturizer",
+        "usage_timing": [
+          "morning_evening"
+        ],
+        "sensitivity_risk": "low",
+        "comedogenic_risk": "low",
+        "fragrance_status": "fragrance_free",
+        "alcohol_status": "alcohol_free",
+        "pregnancy_caution": "unknown",
+        "beautydna_match_notes": "Provisional launch-catalog Product DNA based on the current Japanese manufacturer formula. Final approval requires Beauty OS human review.",
+        "source_summary": "Kao official Japanese product page and ingredient list, retrieved 2026-07-12.",
+        "research_confidence": "medium",
+        "approval_status": "needs_review",
+        "dna_payload": {
+          "build_id": "BDNA-ING-0003",
+          "formula_market": "JP",
+          "formula_verified_at": "2026-07-12",
+          "ingredient_language": "ja_labeling_names",
+          "shopify_link_pending": true
+        }
+      },
+      "beautydna_product_dna_payload": {
+        "skin_type_fit": [
+          "dry",
+          "normal",
+          "combination",
+          "sensitive"
+        ],
+        "main_concerns_it_helps": [
+          "dryness",
+          "barrier_support",
+          "sensitivity",
+          "dehydration"
+        ],
+        "things_to_avoid": [
+          "known_paraben_sensitivity"
+        ],
+        "key_ingredients": [
+          "Allantoin",
+          "Pseudo-Ceramide",
+          "Glycerin"
+        ],
+        "ingredient_flags": [
+          "leave_on",
+          "japan_quasi_drug",
+          "fragrance_free",
+          "colorant_free",
+          "ethanol_free"
+        ],
+        "recommended_routine_step": "moisturizer",
+        "usage_timing": [
+          "morning_evening"
+        ],
+        "sensitivity_risk": "low",
+        "comedogenic_risk": "low",
+        "fragrance_status": "fragrance_free",
+        "alcohol_status": "alcohol_free",
+        "pregnancy_caution": "unknown",
+        "beautydna_match_notes": "Provisional launch-catalog Product DNA based on the current Japanese manufacturer formula. Final approval requires Beauty OS human review.",
+        "source_summary": "Kao official Japanese product page and ingredient list, retrieved 2026-07-12.",
+        "research_confidence": "medium",
+        "approval_status": "needs_review",
+        "dna_payload": {
+          "build_id": "BDNA-ING-0003",
+          "formula_market": "JP",
+          "formula_verified_at": "2026-07-12",
+          "ingredient_language": "ja_labeling_names",
+          "shopify_link_pending": true
+        }
+      }
+    },
+    {
+      "source_type": "beautydna_launch_catalog",
+      "source_key": "BDNA-ING-0003-sunscreen-anessa-h16501",
+      "product": {
+        "sku": "BDNA-ING-0003-SUNSCREEN-001",
+        "brand": "ANESSA",
+        "product_title": "ANESSA Perfect UV Sunscreen Skincare Milk NA SPF50+ PA++++ 60ml",
+        "product_name": "アネッサ パーフェクトUV スキンケアミルク NA 60ml",
+        "category": "suncare",
+        "product_role": "sunscreen",
+        "routine_step": "sunscreen",
+        "price": 0,
+        "currency": "BRL",
+        "handle": "anessa-perfect-uv-sunscreen-skincare-milk-na-60ml",
+        "shopify_status": "needs_shopify_creation",
+        "shopify_product_id": null,
+        "shopify_variant_id": null,
+        "product_url": "https://www.shiseido.co.jp/sw/onlinestore/products/H16501.html",
+        "product_image_url": null,
+        "ingredient_source_url": "https://www.shiseido.co.jp/sw/onlinestore/products/H16501.html",
+        "ingredient_source_type": "manufacturer_official",
+        "ingredient_source_retrieved_at": "2026-07-12",
+        "formula_market": "JP",
+        "ingredient_language": "ja_labeling_names",
+        "ingredient_names": [
+          "ジメチコン",
+          "水",
+          "酸化亜鉛",
+          "エタノール",
+          "セバシン酸ジイソプロピル",
+          "イソドデカン",
+          "オクトクリレン",
+          "サリチル酸エチルヘキシル",
+          "安息香酸アルキル（C12-15）",
+          "PEG/PPG-9/2ジメチルエーテル",
+          "コーンスターチ",
+          "タルク",
+          "シリカ",
+          "ミリスチン酸イソプロピル",
+          "ジエチルアミノヒドロキシベンゾイル安息香酸ヘキシル",
+          "酸化チタン",
+          "PEG-9ポリジメチルシロキシエチルジメチコン",
+          "パルミチン酸デキストリン",
+          "グリセリン",
+          "ホモサレート",
+          "ビスエチルヘキシルオキシフェノールメトキシフェニルトリアジン",
+          "塩化Na",
+          "PEG/PPG-14/7ジメチルエーテル",
+          "トリメチルシロキシケイ酸",
+          "グリチルリチン酸2K",
+          "チャ葉エキス",
+          "トルメンチラ根エキス",
+          "ウンシュウミカン果皮エキス",
+          "アセチルヒアルロン酸Na",
+          "ラウリルベタイン",
+          "水溶性コラーゲン",
+          "エチルヘキシルトリアゾン",
+          "ジステアルジモニウムヘクトライト",
+          "PEG-10ジメチコン",
+          "イソステアリン酸",
+          "トリエトキシカプリリルシラン",
+          "ポリリシノレイン酸ポリグリセリル-6",
+          "水酸化Al",
+          "ステアリン酸",
+          "EDTA-3Na",
+          "PEG-6",
+          "トコフェロール",
+          "BHT",
+          "BG",
+          "ビスブチルジメチコンポリグリセリル-3",
+          "ピロ亜硫酸Na",
+          "フェノキシエタノール",
+          "安息香酸Na",
+          "香料",
+          "合成金雲母"
+        ]
+      },
+      "product_dna": {
+        "skin_type_fit": [
+          "normal",
+          "combination",
+          "oily"
+        ],
+        "main_concerns_it_helps": [
+          "sun_protection",
+          "pigmentation",
+          "photoaging"
+        ],
+        "things_to_avoid": [
+          "alcohol_sensitivity",
+          "fragrance_sensitivity",
+          "known_uv_filter_sensitivity",
+          "eye_area_sensitivity"
+        ],
+        "key_ingredients": [
+          "Zinc Oxide",
+          "Titanium Dioxide",
+          "Uvinul A Plus",
+          "Tinosorb S",
+          "Uvinul T 150"
+        ],
+        "ingredient_flags": [
+          "leave_on",
+          "spf50_plus",
+          "pa_four_plus",
+          "water_resistant",
+          "fragrance_present",
+          "ethanol_present"
+        ],
+        "recommended_routine_step": "sunscreen",
+        "usage_timing": [
+          "morning"
+        ],
+        "sensitivity_risk": "medium",
+        "comedogenic_risk": "unknown",
+        "fragrance_status": "fragranced",
+        "alcohol_status": "contains_ethanol",
+        "pregnancy_caution": "unknown",
+        "beautydna_match_notes": "Provisional launch-catalog Product DNA based on the current Japanese manufacturer formula. Use sensitivity-aware matching because the formula contains ethanol, fragrance, and multiple UV filters. Final approval requires Beauty OS human review.",
+        "source_summary": "Shiseido official Japanese product page and full ingredient list, retrieved 2026-07-12.",
+        "research_confidence": "medium",
+        "approval_status": "needs_review",
+        "dna_payload": {
+          "build_id": "BDNA-ING-0003",
+          "formula_market": "JP",
+          "formula_verified_at": "2026-07-12",
+          "ingredient_language": "ja_labeling_names",
+          "shopify_link_pending": true
+        }
+      },
+      "beautydna_product_dna_payload": {
+        "skin_type_fit": [
+          "normal",
+          "combination",
+          "oily"
+        ],
+        "main_concerns_it_helps": [
+          "sun_protection",
+          "pigmentation",
+          "photoaging"
+        ],
+        "things_to_avoid": [
+          "alcohol_sensitivity",
+          "fragrance_sensitivity",
+          "known_uv_filter_sensitivity",
+          "eye_area_sensitivity"
+        ],
+        "key_ingredients": [
+          "Zinc Oxide",
+          "Titanium Dioxide",
+          "Uvinul A Plus",
+          "Tinosorb S",
+          "Uvinul T 150"
+        ],
+        "ingredient_flags": [
+          "leave_on",
+          "spf50_plus",
+          "pa_four_plus",
+          "water_resistant",
+          "fragrance_present",
+          "ethanol_present"
+        ],
+        "recommended_routine_step": "sunscreen",
+        "usage_timing": [
+          "morning"
+        ],
+        "sensitivity_risk": "medium",
+        "comedogenic_risk": "unknown",
+        "fragrance_status": "fragranced",
+        "alcohol_status": "contains_ethanol",
+        "pregnancy_caution": "unknown",
+        "beautydna_match_notes": "Provisional launch-catalog Product DNA based on the current Japanese manufacturer formula. Use sensitivity-aware matching because the formula contains ethanol, fragrance, and multiple UV filters. Final approval requires Beauty OS human review.",
+        "source_summary": "Shiseido official Japanese product page and full ingredient list, retrieved 2026-07-12.",
+        "research_confidence": "medium",
+        "approval_status": "needs_review",
+        "dna_payload": {
+          "build_id": "BDNA-ING-0003",
+          "formula_market": "JP",
+          "formula_verified_at": "2026-07-12",
+          "ingredient_language": "ja_labeling_names",
+          "shopify_link_pending": true
+        }
+      }
+    }
+  ]
+}

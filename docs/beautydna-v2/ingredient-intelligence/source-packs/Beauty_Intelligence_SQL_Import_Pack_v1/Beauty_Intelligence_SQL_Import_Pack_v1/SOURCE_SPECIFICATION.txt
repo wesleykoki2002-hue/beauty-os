@@ -1,0 +1,1595 @@
+Beauty Intelligence — Complete Ingredient Data Specification
+
+Beauty Intelligence should not be built as a simple list containing “ingredient name, benefits, and ingredients to avoid.” It needs to be a versioned, evidence-backed knowledge graph and rules engine capable of answering four separate questions:
+
+What does this ingredient do?
+Under which formulation and usage conditions does it do it?
+For which users and environments is it suitable or unsuitable?
+How does it behave with other ingredients and complete products?
+
+The first 150 ingredients will be the seed library, but the structure must already support thousands of ingredients, Japanese labeling names, Brazilian requirements, SkinDNA, HairDNA, weather adaptation, product matching, routine generation, warnings, explanations, and future regulatory updates.
+
+Your existing Beauty OS Supabase remains the source of truth. Athena tracks the build, decisions, reviews, audits, and progress, but it should not hold the permanent ingredient intelligence.
+
+1. The three intelligence layers
+Layer 1 — Ingredient Intelligence
+
+Contains canonical facts about each individual ingredient:
+
+Identity and aliases
+Cosmetic functions
+Benefits and mechanisms
+Effective-use conditions
+Safety and tolerability
+Skin, scalp, and hair suitability
+Environmental relevance
+Regulatory status
+Evidence and confidence
+Ingredient-to-ingredient interaction rules
+Layer 2 — Product Intelligence
+
+Contains information about the actual product formulation:
+
+Full ingredient list and order
+Product type and routine role
+Leave-on or rinse-off
+Formulation pH
+Known or estimated concentration ranges
+Delivery system
+Texture and vehicle
+Instructions and frequency
+Packaging and stability
+Fragrance and allergen profile
+Combination effects of the complete formula
+Layer 3 — User and Context Intelligence
+
+Contains the conditions under which the recommendation is being made:
+
+Skin profile
+Hair and scalp profile
+Allergies and sensitivities
+Current routine
+Previous reactions
+Pregnancy or breastfeeding caution
+Medications and dermatological treatment
+Weather and season
+Humidity, temperature, UV and pollution
+Lifestyle and exposure
+Experience with active ingredients
+Preferences, budget and routine complexity
+
+A recommendation must be generated from all three layers. An ingredient that appears appropriate by itself may not be appropriate at a particular concentration, in a particular formula, when combined with another product, or for a user with an impaired barrier.
+
+2. Important architectural rule
+
+The current beautydna_ingredient_intelligence table should remain the canonical summary record, but it should not contain every piece of research as one enormous row.
+
+Use normalized child tables for evidence, regulatory rules, benefits, concentrations, suitability and interactions.
+
+Your existing tables should remain:
+
+beautydna_ingredient_intelligence
+beautydna_ingredient_aliases
+beautydna_ingredient_compatibility_rules
+beautydna_ingredient_review_queue
+beautydna_product_ingredients
+beautydna_product_ingredient_matches
+
+Recommended additional tables:
+
+beautydna_ingredient_functions
+beautydna_ingredient_claims
+beautydna_ingredient_evidence
+beautydna_ingredient_formulation_properties
+beautydna_ingredient_concentration_rules
+beautydna_ingredient_safety_profiles
+beautydna_ingredient_profile_fit
+beautydna_ingredient_environment_fit
+beautydna_ingredient_product_role_fit
+beautydna_ingredient_regulatory_status
+beautydna_ingredient_localizations
+beautydna_ingredient_interaction_evidence
+beautydna_taxonomy_terms
+beautydna_rule_versions
+
+This allows one ingredient to have multiple benefits, multiple studies, different concentration rules, different jurisdictional rules and multiple conditional interactions without duplicating the main record.
+
+3. Required fields for every ingredient
+A. Canonical identity and normalization
+
+Every ingredient must have a stable canonical identity.
+
+Required fields
+ingredient_id
+canonical_inci_name
+normalized_ingredient_name
+ingredient_slug
+preferred_display_name_en
+preferred_display_name_pt_br
+preferred_display_name_ja
+japanese_labeling_name
+ingredient_description_short
+ingredient_description_long
+ingredient_family
+ingredient_class
+ingredient_subclass
+parent_ingredient_id
+derivative_type
+ingredient_origin_type
+ingredient_role_type
+is_single_substance
+is_mixture
+is_botanical
+is_ferment
+is_mineral
+is_polymer
+is_peptide
+is_uv_filter
+is_preservative
+is_colorant
+is_fragrance_component
+is_quasi_drug_active_japan
+record_status
+review_status
+Identification codes
+
+Store when available:
+
+CAS number
+EC/EINECS number
+PubChem CID
+UNII
+INCI monograph identifier
+Chemical formula
+Molecular weight
+Botanical Latin name
+Plant part used
+Strain or fermentation organism
+Country- or region-specific identification codes
+Alias records
+
+Aliases must not be stored only as a text array. Each alias should have its own record containing:
+
+Alias name
+Normalized alias
+Alias language
+Alias type
+Source
+Whether the alias is official
+Whether it is ambiguous
+Whether it refers to a family or exact substance
+Canonical ingredient ID
+Review status
+
+Alias types should include:
+
+INCI synonym
+Japanese label name
+Portuguese translation
+English common name
+Chemical synonym
+Botanical synonym
+Abbreviation
+Trade name
+Legacy name
+Misspelling
+Product-label variation
+
+Japan uses specific Japanese cosmetic labeling names connected to INCI nomenclature, so the database should preserve both rather than translating names freely.
+
+B. Ingredient classification
+
+Each ingredient must be classified across several independent dimensions.
+
+Cosmetic functional categories
+
+Examples of controlled function terms:
+
+Humectant
+Emollient
+Occlusive
+Surfactant
+Cleansing agent
+Solvent
+Emulsifier
+Emulsion stabilizer
+Thickener
+Film former
+Conditioning agent
+Antistatic agent
+Chelating agent
+Buffer
+pH adjuster
+Preservative
+Preservative booster
+Antioxidant
+Colorant
+Fragrance
+Fragrance masking agent
+UV filter
+Opacifying agent
+Absorbent
+Abrasive
+Keratolytic
+Exfoliant
+Skin-conditioning agent
+Hair-conditioning agent
+Depigmenting or brightening active
+Soothing active
+Sebum-control active
+Anti-dandruff active
+Nail-conditioning agent
+
+CosIng can be used for standardized cosmetic functions, but an INCI name appearing in CosIng does not itself mean that the substance is legally approved for cosmetic use. Actual restrictions come from the applicable regulation and annexes.
+
+Biological or cosmetic action categories
+
+These should be separate from formulation functions:
+
+Barrier support
+Water retention
+Sebum regulation
+Keratinization regulation
+Pigmentation pathway support
+Antioxidant activity
+Inflammation-modulating activity
+Microbial-control activity
+Collagen-supporting claim
+Elasticity-supporting claim
+Desquamation
+Cell-turnover claim
+Scalp flake control
+Hair-fiber lubrication
+Hair-fiber strengthening
+Cuticle smoothing
+Color protection
+Heat protection
+UV protection
+Odor control
+
+An ingredient may have both a formula function and a user benefit. For example, “solvent” is a formula function; it is not automatically a customer benefit.
+
+4. Physicochemical and formulation properties
+
+Ingredient performance and compatibility often depend on formulation conditions. These fields are therefore important for both product matching and research accuracy.
+
+Required formulation fields
+physical_form
+ionic_character
+water_solubility
+oil_solubility
+alcohol_solubility
+dispersibility
+log_p_or_log_kow
+pka
+molecular_weight
+charge_at_skin_ph
+optimal_ph_min
+optimal_ph_max
+acceptable_ph_min
+acceptable_ph_max
+ph_dependency_notes
+heat_stability
+light_stability
+oxygen_stability
+water_stability
+hydrolysis_risk
+oxidation_risk
+metal_ion_sensitivity
+electrolyte_sensitivity
+freeze_thaw_sensitivity
+recommended_storage_conditions
+packaging_sensitivity
+airless_packaging_preferred
+opaque_packaging_preferred
+delivery_system_relevance
+encapsulation_relevance
+nanoform_possible
+particle_size_relevance
+penetration_context
+formulation_notes
+Manufacturing-use fields
+
+Useful for future supplier and product-formulation intelligence:
+
+Recommended order of addition
+Recommended process temperature
+Dispersing requirements
+Neutralization requirements
+Solubilizer requirements
+Chelator requirements
+Antioxidant stabilizer requirements
+Common raw-material forms
+Standardization level for botanical extracts
+Carrier ingredients normally included in the raw material
+Purity or assay range
+Common impurities or degradation products
+
+These fields must not be converted directly into customer warnings. They are technical formulation data.
+
+5. Concentration and exposure intelligence
+
+Do not store one universal “recommended concentration.”
+
+An ingredient may have different ranges based on:
+
+Product type
+Leave-on or rinse-off
+Face, body, scalp or hair use
+Frequency
+Formulation pH
+Delivery system
+Jurisdiction
+Intended benefit
+User sensitivity
+Adult or child use
+Each concentration record needs
+ingredient_id
+concentration_rule_type
+minimum_concentration
+maximum_concentration
+concentration_unit
+typical_use_min
+typical_use_max
+evidence_effective_min
+evidence_effective_max
+regulatory_max
+product_category
+application_area
+leave_on_or_rinse_off
+delivery_system
+ph_min
+ph_max
+frequency
+jurisdiction
+user_population
+benefit_claim_id
+safety_context
+source_id
+evidence_level
+confidence_score
+effective_from
+effective_to
+
+CIR safety conclusions can include qualifications based on maximum concentration, leave-on versus rinse-off use, and other conditions. Therefore, “safe” must never be stored as a context-free boolean.
+
+When product concentration is unknown, Beauty Intelligence must store:
+
+concentration_status: unknown
+An optional coarse band
+The method used to estimate the band
+Confidence
+Whether the estimate came from the manufacturer, regulation, patent, ingredient order or another source
+
+Ingredient order alone must not be treated as an exact concentration.
+
+6. Benefit and mechanism records
+
+Every claimed benefit must have its own structured record.
+
+Benefit claim fields
+claim_id
+ingredient_id
+domain
+target_concern
+benefit_name
+benefit_category
+mechanism_summary
+mechanism_detailed
+expected_visible_outcome
+expected_functional_outcome
+onset_time_min
+onset_time_max
+onset_time_unit
+maintenance_required
+benefit_strength
+population_studied
+application_area
+product_format
+concentration_context
+frequency_context
+formulation_context
+evidence_level
+confidence_score
+evidence_consistency
+limitations
+source_ids
+review_status
+Concerns should use controlled IDs
+
+Examples for skin:
+
+Dehydration
+Dryness
+Barrier impairment
+Excess sebum
+Clogged-pore tendency
+Active blemishes
+Post-blemish marks
+Uneven tone
+Hyperpigmentation
+Dullness
+Fine lines
+Loss of firmness
+Rough texture
+Visible pores
+Redness
+Sensitivity
+Irritation
+Flaking
+Sun damage
+Under-eye dryness
+Lip dryness
+
+Examples for scalp:
+
+Oily scalp
+Dry scalp
+Sensitive scalp
+Flaking
+Dandruff tendency
+Product buildup
+Scalp odor
+Itching
+Breakage near the root
+Chemically treated scalp sensitivity
+
+Examples for hair fiber:
+
+Dryness
+High porosity
+Low porosity
+Breakage
+Frizz
+Tangling
+Loss of shine
+Heat damage
+UV damage
+Bleach damage
+Color fading
+Lack of volume
+Excess weight
+Curl-definition needs
+
+Do not permit the agent to invent new concern names freely. It should map every concern to the approved ontology.
+
+7. Skin suitability fields
+
+Suitability must not be represented as “good for oily skin: yes.”
+
+For every skin type or state, store:
+
+Fit direction
+Fit score
+Conditions
+Potential benefit
+Potential concern
+Confidence
+Evidence
+Explanation
+Skin types and states
+Dry
+Oily
+Combination
+Balanced
+Dehydrated
+Sensitive
+Reactive
+Barrier-impaired
+Blemish-prone
+Congestion-prone
+Rosacea-prone
+Eczema-prone
+Hyperpigmentation-prone
+Mature
+Photo-damaged
+Post-procedure
+Shaving-irritated
+Required profile-fit fields
+profile_dimension
+profile_value
+fit_classification
+fit_score
+benefit_relevance
+tolerability_risk
+conditions
+exceptions
+application_guidance
+evidence_level
+confidence_score
+source_ids
+
+Suggested fit classifications:
+
+Strong fit
+Likely fit
+Conditional fit
+Neutral
+Use with caution
+Usually unsuitable
+Insufficient evidence
+
+Do not use “safe” and “unsafe” for ordinary preference matching.
+
+8. Hair and scalp suitability
+
+Hair suitability must be separated into scalp suitability and hair-fiber suitability.
+
+An ingredient can be useful for the hair shaft but irritating or heavy on the scalp, or vice versa.
+
+Scalp fields
+Scalp oiliness fit
+Scalp dryness fit
+Sensitive-scalp fit
+Flaking relevance
+Dandruff relevance
+Buildup potential
+Irritation potential
+Contact time relevance
+Rinse-off requirement
+Frequency guidance
+Hair-loss claim status
+Evidence limitations
+Medical referral trigger
+Hair-fiber fields
+Straight, wavy, curly and coily suitability
+Fine, medium and coarse strand suitability
+Low-, medium- and high-porosity suitability
+Untreated, colored, bleached, permed and relaxed hair suitability
+Cuticle smoothing
+Friction reduction
+Detangling
+Breakage reduction
+Film buildup
+Weight risk
+Protein-overload relevance
+Humectant behavior in humidity
+Heat-protection relevance
+Color-protection relevance
+Washout behavior
+Silicone or polymer buildup context
+Clarifying-shampoo requirement
+
+“Protein overload,” “buildup” and similar concepts should not become automatic exclusions. They should be conditional rules based on ingredient type, product concentration, frequency, hair characteristics and actual user response.
+
+9. Safety and tolerability profile
+
+Each ingredient needs separate hazard and exposure fields.
+
+Required safety endpoints
+Skin irritation
+Skin sensitization
+Eye irritation
+Respiratory or inhalation concern
+Phototoxicity
+Photoallergy
+Photosensitivity relevance
+Contact-allergy relevance
+Barrier disruption potential
+Drying potential
+Stinging potential
+Flushing potential
+Systemic toxicity status
+Reproductive toxicity status
+Genotoxicity status
+Carcinogenicity status
+Endocrine-related evidence status
+Impurity-related concerns
+Contamination risks
+Microbial contamination risks for natural materials
+Nanomaterial status
+Occupational exposure concern
+Accidental ingestion concern
+
+For each endpoint, store:
+
+Hazard status
+Exposure route
+Relevant concentration
+Product format
+Population
+Evidence level
+Conflicting evidence
+Regulatory conclusion
+Practical recommendation
+Source
+
+SCCS guidance treats cosmetic safety assessment as an exposure-based process and includes multiple toxicological endpoints rather than relying on a single hazard score. It also emphasizes systematic literature review and current safety-evaluation methodology.
+
+Sensitive-population fields
+Pregnancy caution
+Breastfeeding caution
+Infant or child caution
+Adolescent use
+Older-adult skin
+Immunocompromised-user caution
+Broken-skin caution
+Post-procedure caution
+Prescription-treatment caution
+Known-allergy caution
+
+These should use:
+
+no_known_special_caution
+limited_data
+professional_guidance_preferred
+avoid_under_defined_conditions
+regulatory_restriction
+medical_contraindication
+
+The agent must not write absolute statements such as “pregnancy safe” merely because no warning was found.
+
+10. Allergy and sensitivity intelligence
+
+Include:
+
+Known sensitizer status
+Common contact-allergy status
+Fragrance-allergen status
+Botanical-family allergy relevance
+Protein-allergy relevance
+Latex cross-reactivity relevance
+Balsam or fragrance cross-reactivity
+Preservative-family cross-reactivity
+Acrylate-family relevance
+Hair-dye allergy relevance
+User-reported sensitivity frequency
+Patch-test recommendation
+Dermatologist patch-test series relevance
+
+Fragrance cannot be represented as one ingredient. The system must distinguish:
+
+Declared fragrance or parfum
+Individually declared fragrance components
+Essential oils
+Aromatic botanical extracts
+Masking fragrances
+Fragrance-free claim
+Unscented claim
+Unknown fragrance composition
+
+FDA notes that cosmetic products can provoke allergic reactions and that fragrance composition may not always be fully apparent from a simple label entry, reinforcing the need for cautious, non-absolute customer explanations.
+
+11. Comedogenicity, acne and microbiome-related fields
+
+Do not use one universal 0–5 “comedogenic rating” as a hard decision.
+
+Store:
+
+Human facial-comedogenicity evidence
+Animal-model evidence
+Occlusivity
+Follicular accumulation potential
+Formula dependence
+Concentration dependence
+Vehicle dependence
+Acne-treatment relevance
+Irritation-induced breakout possibility
+User-report signal
+Evidence limitations
+Confidence
+
+For Malassezia or “fungal acne” claims, store:
+
+Biological plausibility
+Ingredient or lipid substrate relevance
+Formulation context
+Clinical evidence status
+Whether the claim is theoretical
+Confidence
+Medical referral guidance
+
+The recommendation engine may use these as low- or moderate-confidence signals, but not as automatic exclusions unless stronger evidence exists.
+
+12. Environmental and weather intelligence
+
+Weather must be a first-class part of Beauty Intelligence, not an afterthought.
+
+Environmental dimensions
+Temperature
+Relative humidity
+UV index
+Pollution
+Wind
+Altitude
+Indoor heating
+Air conditioning
+Seasonal change
+Ocean or saltwater exposure
+Chlorinated-water exposure
+Hard-water exposure
+Sweating
+Mask wearing
+Occupational exposure
+Ingredient environment-fit fields
+environment_factor
+environment_band
+fit_effect
+fit_score
+benefit_reason
+risk_reason
+recommended_product_format
+frequency_adjustment
+layering_adjustment
+exceptions
+evidence_level
+confidence_score
+
+Examples of rule categories:
+
+Humectant behavior in dry environments
+Occlusive support in low humidity
+Lightweight texture preference in high humidity
+Barrier-support relevance in cold weather
+Antioxidant relevance under pollution exposure
+UV-related caution
+Sweat and water-resistance needs
+Cleansing needs after heavy sunscreen or pollution exposure
+Scalp buildup in hot, humid weather
+Hair humectancy and frizz behavior
+
+Low temperature and low humidity can impair skin-barrier function, while pollution and other environmental exposures may affect transepidermal water loss. This supports storing climate and exposure conditions separately from basic skin type.
+
+13. Product-role suitability
+
+Every ingredient should specify where it is useful.
+
+Skin product roles
+Oil cleanser
+Balm cleanser
+Water cleanser
+Exfoliating cleanser
+Toner
+Essence
+Hydrating serum
+Treatment serum
+Eye product
+Gel moisturizer
+Lotion
+Cream moisturizer
+Barrier balm
+Spot treatment
+Facial oil
+Sunscreen
+Sleeping mask
+Wash-off mask
+Lip treatment
+Hair and scalp roles
+Shampoo
+Clarifying shampoo
+Anti-dandruff shampoo
+Scalp treatment
+Rinse-out conditioner
+Hair mask
+Leave-in conditioner
+Hair serum
+Hair oil
+Heat protectant
+Styling cream
+Curl product
+Hair spray
+Color-protection treatment
+
+For each role:
+
+Suitability
+Expected function
+Contact-time relevance
+Leave-on or rinse-off relevance
+Typical concentration context
+User-profile relevance
+Evidence
+Confidence
+14. Ingredient interaction specification
+
+This is one of the most important parts of the entire system.
+
+Do not store only:
+
+avoid_combining_with: ["retinol", "acid"]
+
+That is too vague and will produce inaccurate recommendations.
+
+Interaction types
+
+Every pairwise relationship must be classified as one of the following:
+
+synergy
+complementary
+compatible
+conditional_compatibility
+redundant_action
+cumulative_irritation
+ph_or_environment_dependency
+chemical_stability_conflict
+formulation_incompatibility
+delivery_interference
+sequencing_dependency
+photosensitivity_burden
+allergy_cross_reactivity
+medical_caution
+insufficient_evidence
+no_known_meaningful_interaction
+Interaction contexts
+
+The rule must state where it applies:
+
+Same raw formulation
+Same finished product
+Same application layer
+Same morning routine
+Same evening routine
+Same day but separate routines
+Alternating days
+Short-contact product
+Rinse-off product
+Leave-on product
+Face use
+Eye-area use
+Scalp use
+Hair-fiber use
+Body use
+Required interaction fields
+interaction_id
+ingredient_a_id
+ingredient_b_id
+interaction_type
+directionality
+mechanism
+affected_benefit
+affected_safety_endpoint
+same_formula_status
+same_routine_status
+leave_on_status
+rinse_off_status
+am_status
+pm_status
+concentration_a_min
+concentration_a_max
+concentration_b_min
+concentration_b_max
+ph_context
+delivery_system_context
+application_area
+user_risk_modifiers
+environment_modifiers
+severity
+recommendation_action
+spacing_recommendation
+frequency_recommendation
+exceptions
+customer_explanation_short
+professional_explanation
+evidence_level
+confidence_score
+source_ids
+review_status
+reviewed_by
+reviewed_at
+Recommendation actions
+
+Use controlled outputs:
+
+Can be used together
+Prefer same routine
+Prefer separate layers
+Allow product to dry first
+Use morning and evening separately
+Alternate days
+Reduce frequency
+Introduce one product at a time
+Use only if skin is tolerant
+Avoid on impaired barrier
+Avoid around eyes
+Avoid in the same formulation
+Avoid under specified medical condition
+No actionable interaction established
+Insufficient evidence for a rule
+Critical distinction
+
+The system must distinguish:
+
+Formulation incompatibility
+
+The ingredients may be difficult to formulate together inside one bottle.
+
+Routine incompatibility
+
+Two separate finished products may create excessive irritation or instability when layered.
+
+Tolerability burden
+
+The ingredients may be chemically compatible but too aggressive together for a particular user.
+
+Redundancy
+
+The combination may be unnecessary rather than dangerous.
+
+Synergy
+
+The ingredients may improve complementary outcomes or tolerability.
+
+Medical caution
+
+The issue relates to a medical condition, prescription or sensitive population and should not be reduced to a cosmetic “mixing” rule.
+
+The existing avoid_combining_with field should eventually become a derived customer summary, generated from approved structured interaction rules. It should not be the source of truth.
+
+15. Regulatory intelligence
+
+Regulatory status must be stored separately by jurisdiction and time period.
+
+Jurisdictions to support from the beginning
+Japan
+Brazil
+European Union
+United States
+International or other markets later
+Regulatory fields
+ingredient_id
+jurisdiction
+regulatory_category
+status
+legal_reference
+annex_or_list
+permitted_product_types
+prohibited_product_types
+maximum_concentration
+concentration_basis
+leave_on_restriction
+rinse_off_restriction
+application_area_restriction
+age_restriction
+required_warning
+labeling_requirement
+purity_requirement
+impurity_limit
+quasi_drug_status
+otc_drug_status
+nanoform_requirement
+effective_from
+effective_to
+last_verified_at
+source_id
+review_status
+
+Japan’s Standards for Cosmetics contain prohibited and restricted categories and specific positive-list controls for areas such as preservatives, UV absorbers and tar colors. Ingredient records therefore need more than a generic Japan-approved flag.
+
+Brazil uses INCI nomenclature and maintains lists of prohibited, restricted and permitted substances, including preservatives, colorants and UV filters. Anvisa updated cosmetic-substance lists in July 2026, demonstrating why these records must be versioned and regularly rechecked rather than permanently copied into an ingredient row.
+
+16. Evidence specification
+
+Every meaningful claim needs evidence.
+
+Do not attach three URLs to the ingredient and assume they support everything. Evidence must be linked to the exact claim, safety endpoint, concentration rule or interaction rule it supports.
+
+Evidence record fields
+source_id
+source_type
+title
+authors_or_authority
+publication
+publication_date
+jurisdiction
+url
+doi
+pmid
+document_identifier
+retrieved_at
+study_type
+study_design
+human_or_nonhuman
+sample_size
+population
+skin_or_hair_condition
+ingredient_form
+concentration
+vehicle
+product_format
+application_area
+frequency
+duration
+comparator
+measured_outcomes
+result_summary
+statistical_relevance
+limitations
+conflicts_of_interest
+funding_source
+directness
+applicability
+quality_score
+evidence_level
+review_status
+Recommended evidence hierarchy
+Level A — Regulatory or high-confidence clinical evidence
+Official regulatory safety assessment
+High-quality systematic review
+Meta-analysis
+Multiple consistent controlled human trials
+Strong professional consensus supported by evidence
+Level B — Moderate human evidence
+One or more controlled human studies
+Well-designed comparative studies
+Consistent observational evidence
+Strong safety-review conclusion with applicable conditions
+Level C — Limited but relevant evidence
+Small human study
+Open-label study
+Ex vivo human study
+Strong mechanistic evidence supported by limited human data
+Level D — Preliminary or indirect evidence
+In vitro research
+Animal research
+Chemical or biological plausibility
+Manufacturer study without independent confirmation
+Evidence from a related derivative rather than the exact ingredient
+Level E — Unsupported or marketing-level information
+Brand claim without accessible data
+Blog or retailer statement
+Influencer or anecdotal claim
+Traditional use without applicable evidence
+
+Level E information must not generate a hard safety rule, compatibility rule or strong efficacy claim.
+
+Evidence dimensions should be stored separately
+
+One overall “evidence level” is insufficient. Store:
+
+Efficacy evidence
+Safety evidence
+Interaction evidence
+Regulatory certainty
+Mechanism certainty
+Concentration certainty
+Formulation applicability
+Population applicability
+17. Customer explanations
+
+Every approved ingredient needs explanations at multiple levels.
+
+Required text fields
+One-line definition
+Short customer explanation
+Detailed customer explanation
+Main benefits
+Who may benefit
+Who should be cautious
+How it is normally used
+What affects its performance
+Common misconceptions
+Interaction summary
+Weather relevance
+Skin relevance
+Hair relevance
+Evidence summary
+Uncertainty statement
+Portuguese customer version
+English version
+Japanese version
+
+Customer language should avoid:
+
+“Chemical-free”
+“Toxin-free”
+“100% safe”
+“Guaranteed”
+“Cures”
+“Works for everyone”
+“Pore-clogging” as an absolute
+“Pregnancy safe” without qualification
+“Never mix” unless the rule is genuinely supported and context-specific
+18. Data needed from every product
+
+Ingredient Intelligence cannot reliably match complete products unless each product record includes:
+
+Full raw ingredient list
+Canonical mapped ingredient IDs
+Ingredient order
+Exact concentration when disclosed
+Estimated concentration band when defensible
+Concentration-source type
+Product pH when available
+Product format
+Texture
+Vehicle
+Leave-on or rinse-off
+Application area
+Routine step
+Recommended amount
+Recommended frequency
+Morning or evening use
+Manufacturer warnings
+Fragrance status
+Essential-oil status
+Drying-alcohol status
+Allergen declarations
+UV-filter system
+Water resistance
+Delivery systems or encapsulation
+Packaging type
+Stability and storage instructions
+Intended skin types
+Intended hair or scalp types
+Claims
+Regulatory market
+Product status
+Recommendation eligibility
+Approval status
+
+The engine should never conclude that two products are incompatible merely because each contains an ingredient frequently mentioned in an online “do not mix” list.
+
+19. User profile fields required for matching
+SkinDNA
+Baseline skin type
+Current oil level
+Current dehydration level
+Barrier condition
+Sensitivity level
+Reaction history
+Blemish activity
+Congestion tendency
+Pigmentation pattern
+Redness
+Flaking
+Texture
+Fine lines
+Sun exposure
+Current treatments
+Current routine
+Active-ingredient experience
+Known allergies
+HairDNA and ScalpDNA
+Scalp oiliness
+Scalp dryness
+Scalp sensitivity
+Flaking or dandruff
+Hair pattern
+Strand thickness
+Density
+Porosity
+Chemical-treatment history
+Heat exposure
+Breakage
+Frizz
+Buildup tendency
+Styling routine
+Wash frequency
+Water hardness
+Climate exposure
+Personal context
+Age band
+Pregnancy or breastfeeding status
+Known allergies
+Prescriptions
+Dermatological procedures
+Shaving
+Occupation or outdoor exposure
+Mask wearing
+Sleep schedule
+Routine time available
+Product-format preferences
+Fragrance preferences
+Budget
+Ethical preferences
+Desired routine complexity
+Country and regulatory market
+Environmental context
+Current location
+Season
+Temperature
+Humidity
+UV index
+Pollution level
+Wind
+Indoor heating or air conditioning
+Expected travel conditions
+
+Medical information should create caution and referral logic, not diagnosis.
+
+20. Recommendation-engine output
+
+For every product recommendation, the engine should return:
+
+eligibility_status
+overall_fit_score
+efficacy_fit_score
+tolerability_fit_score
+skin_profile_fit_score
+hair_profile_fit_score
+environment_fit_score
+routine_compatibility_score
+evidence_confidence_score
+regulatory_status
+hard_exclusion_codes
+caution_codes
+positive_match_codes
+interaction_codes
+missing_data_codes
+why_it_matches
+why_it_may_not_match
+how_to_use
+how_to_introduce
+what_to_monitor
+alternative_role_needed
+customer_safe_status
+
+Suggested eligibility states:
+
+blocked
+not_recommended
+conditional
+eligible
+strong_match
+insufficient_data
+
+Hard blocks should be applied before scoring:
+
+Regulatory prohibition
+Known user allergy
+Defined medical contraindication
+High-severity approved interaction rule
+Product disabled or not approved
+Required data missing for a high-risk decision
+
+All weights and thresholds should be stored in versioned database configuration, not hardcoded invisibly inside the application.
+
+21. Exact agent output structure
+
+The research agent should return one structured object per ingredient.
+
+{
+  "schema_version": "beauty-intelligence-ingredient-v1",
+  "ingredient": {
+    "canonical_inci_name": "",
+    "normalized_ingredient_name": "",
+    "ingredient_slug": "",
+    "preferred_display_names": {
+      "en": "",
+      "pt_br": "",
+      "ja": ""
+    },
+    "japanese_labeling_name": null,
+    "identity_codes": {
+      "cas": [],
+      "ec_einecs": [],
+      "pubchem_cid": null,
+      "unii": null,
+      "inci_monograph_id": null
+    },
+    "classification": {
+      "family": "",
+      "class": "",
+      "subclass": "",
+      "parent_ingredient": null,
+      "derivative_type": null,
+      "origin_types": [],
+      "role_types": [],
+      "domains": []
+    },
+    "flags": {
+      "is_single_substance": null,
+      "is_mixture": null,
+      "is_botanical": null,
+      "is_ferment": null,
+      "is_mineral": null,
+      "is_polymer": null,
+      "is_peptide": null,
+      "is_uv_filter": null,
+      "is_preservative": null,
+      "is_colorant": null,
+      "is_fragrance_component": null
+    },
+    "explanations": {
+      "short_en": "",
+      "long_en": "",
+      "short_pt_br": "",
+      "long_pt_br": "",
+      "short_ja": "",
+      "long_ja": "",
+      "common_misconceptions": []
+    }
+  },
+  "aliases": [
+    {
+      "alias_name": "",
+      "normalized_alias_name": "",
+      "language": "",
+      "alias_type": "",
+      "is_official": false,
+      "is_ambiguous": false,
+      "source_ids": []
+    }
+  ],
+  "functions": [
+    {
+      "function_code": "",
+      "function_type": "formulation_or_biological",
+      "primary_or_secondary": "",
+      "description": "",
+      "evidence_level": "",
+      "confidence_score": 0.0,
+      "source_ids": []
+    }
+  ],
+  "formulation_properties": {
+    "physical_form": null,
+    "ionic_character": null,
+    "water_solubility": null,
+    "oil_solubility": null,
+    "log_p": null,
+    "pka": null,
+    "molecular_weight": null,
+    "optimal_ph": {
+      "min": null,
+      "max": null
+    },
+    "acceptable_ph": {
+      "min": null,
+      "max": null
+    },
+    "stability": {
+      "heat": null,
+      "light": null,
+      "oxygen": null,
+      "water": null,
+      "oxidation_risk": null,
+      "hydrolysis_risk": null
+    },
+    "packaging_notes": [],
+    "delivery_system_notes": [],
+    "formulation_notes": []
+  },
+  "claims": [
+    {
+      "domain": "",
+      "target_concern_code": "",
+      "benefit_name": "",
+      "mechanism_summary": "",
+      "expected_outcome": "",
+      "concentration_context": null,
+      "product_format_context": [],
+      "application_area": [],
+      "frequency_context": null,
+      "onset_estimate": null,
+      "evidence_level": "",
+      "confidence_score": 0.0,
+      "limitations": [],
+      "source_ids": []
+    }
+  ],
+  "concentration_rules": [
+    {
+      "rule_type": "",
+      "minimum": null,
+      "maximum": null,
+      "unit": "percent",
+      "product_category": "",
+      "leave_on_or_rinse_off": "",
+      "application_area": "",
+      "jurisdiction": null,
+      "benefit_claim_code": null,
+      "ph_context": null,
+      "evidence_level": "",
+      "confidence_score": 0.0,
+      "source_ids": []
+    }
+  ],
+  "profile_fit": [
+    {
+      "domain": "skin_or_scalp_or_hair",
+      "profile_dimension": "",
+      "profile_value": "",
+      "fit_classification": "",
+      "fit_score": null,
+      "benefit_reason": "",
+      "risk_reason": "",
+      "conditions": [],
+      "exceptions": [],
+      "evidence_level": "",
+      "confidence_score": 0.0,
+      "source_ids": []
+    }
+  ],
+  "environment_fit": [
+    {
+      "environment_factor": "",
+      "environment_band": "",
+      "fit_effect": "",
+      "fit_score": null,
+      "reason": "",
+      "recommended_adjustments": [],
+      "evidence_level": "",
+      "confidence_score": 0.0,
+      "source_ids": []
+    }
+  ],
+  "safety_profile": [
+    {
+      "endpoint": "",
+      "status": "",
+      "exposure_route": "",
+      "concentration_context": null,
+      "product_context": null,
+      "population_context": null,
+      "practical_recommendation": "",
+      "evidence_level": "",
+      "confidence_score": 0.0,
+      "source_ids": []
+    }
+  ],
+  "product_role_fit": [
+    {
+      "product_role": "",
+      "fit_classification": "",
+      "expected_function": "",
+      "leave_on_or_rinse_off": "",
+      "contact_time_relevance": "",
+      "evidence_level": "",
+      "confidence_score": 0.0,
+      "source_ids": []
+    }
+  ],
+  "regulatory_status": [
+    {
+      "jurisdiction": "",
+      "status": "",
+      "regulatory_category": "",
+      "legal_reference": "",
+      "annex_or_list": null,
+      "maximum_concentration": null,
+      "product_restrictions": [],
+      "required_warnings": [],
+      "effective_from": null,
+      "effective_to": null,
+      "last_verified_at": "",
+      "source_ids": []
+    }
+  ],
+  "interactions": [
+    {
+      "other_ingredient_normalized_name": "",
+      "interaction_type": "",
+      "directionality": "symmetric_or_directional",
+      "mechanism": "",
+      "same_formula_status": "",
+      "same_routine_status": "",
+      "leave_on_status": "",
+      "rinse_off_status": "",
+      "am_status": "",
+      "pm_status": "",
+      "user_risk_modifiers": [],
+      "environment_modifiers": [],
+      "severity": "",
+      "recommendation_action": "",
+      "spacing_recommendation": null,
+      "exceptions": [],
+      "customer_explanation": "",
+      "professional_explanation": "",
+      "evidence_level": "",
+      "confidence_score": 0.0,
+      "source_ids": []
+    }
+  ],
+  "sources": [
+    {
+      "source_id": "",
+      "source_type": "",
+      "title": "",
+      "authority_or_authors": "",
+      "publication_date": null,
+      "url": "",
+      "doi": null,
+      "pmid": null,
+      "jurisdiction": null,
+      "study_type": null,
+      "population": null,
+      "ingredient_form": null,
+      "concentration": null,
+      "product_format": null,
+      "duration": null,
+      "result_summary": "",
+      "limitations": [],
+      "quality_score": null,
+      "evidence_level": "",
+      "retrieved_at": ""
+    }
+  ],
+  "quality_control": {
+    "missing_required_fields": [],
+    "conflicting_findings": [],
+    "unverified_claims": [],
+    "requires_specialist_review": false,
+    "research_confidence": 0.0,
+    "review_status": "needs_review"
+  }
+}
+22. Rules the research agent must follow
+
+The agent must:
+
+Use the exact canonical INCI ingredient, not a loosely related ingredient family.
+Distinguish the parent ingredient from salts, esters, derivatives, extracts and fermented forms.
+Preserve Japanese labeling names separately.
+Never invent concentration values.
+Never invent regulatory approval.
+Never infer “safe” from absence of a warning.
+Never infer effectiveness from a brand claim alone.
+Never create a hard compatibility rule without evidence.
+State whether an interaction concerns the same formula, same routine or cumulative irritation.
+Separate chemical incompatibility from user tolerability.
+Record conflicting findings instead of choosing the most convenient conclusion.
+Use null for unknown data rather than guessing.
+Explain why a field is unknown when the missing information is important.
+Attach sources to each material claim.
+Mark theoretical evidence as theoretical.
+Avoid universal comedogenicity conclusions.
+Avoid universal Malassezia conclusions.
+Avoid categorical pregnancy-safety claims.
+Avoid medical diagnosis.
+Default every generated record to needs_review, not approved.
+Never overwrite an approved record without creating a new version.
+Record the research date and applicable regulatory date.
+Produce machine-readable JSON with no commentary outside the JSON when preparing import files.
+Use the approved controlled vocabularies.
+Flag duplicate ingredients and aliases before insertion.
+23. Approval requirements
+
+An ingredient should only move from needs_review to approved when:
+
+Canonical identity is verified
+Aliases are verified
+Main functions are sourced
+Main benefit claims are sourced
+Safety endpoints are reviewed
+Japan status is checked
+Brazil status is checked
+EU status is checked
+Concentration claims are contextualized
+Interaction claims are contextualized
+Customer explanations do not overstate evidence
+Conflicts and limitations are documented
+A human reviewer is recorded
+Review date is recorded
+Source links remain accessible
+The record passes automated validation
+
+Only approved ingredient data should be used in customer-facing BeautyDNA recommendations. Missing or unresolved ingredients should continue to enter beautydna_ingredient_review_queue.
+
+24. Build order for the first 150 ingredients
+
+For the initial 150, the agent should generate data in this order:
+
+Pass 1 — Identity and normalization
+
+Canonical names, Japanese names, aliases, classifications and duplicate resolution.
+
+Pass 2 — Functions and benefits
+
+Formulation functions, biological actions, concerns helped and product-role fit.
+
+Pass 3 — Formulation and concentration
+
+pH, stability, delivery context, typical use and evidence-effective concentration ranges.
+
+Pass 4 — Safety and suitability
+
+Skin, scalp, hair, sensitive populations, irritation, sensitization and exposure conditions.
+
+Pass 5 — Regulatory research
+
+Japan, Brazil, EU and US status with dated sources.
+
+Pass 6 — Interactions
+
+Only evidence-backed or strongly justified interactions. Do not attempt to populate every possible ingredient pair with invented information.
+
+Pass 7 — Customer explanations
+
+Portuguese first for Hanna customers, with English and Japanese structured alongside it.
+
+Pass 8 — Validation and human review
+
+Deduplication, missing fields, conflicting evidence, source quality and approval.
+
+This specification gives Beauty Intelligence enough depth to support product compatibility, SkinDNA, HairDNA, weather-adaptive routines, ingredient explanations, safety cautions and evidence-aware recommendations without relying on simplistic “good ingredient/bad ingredient” lists.

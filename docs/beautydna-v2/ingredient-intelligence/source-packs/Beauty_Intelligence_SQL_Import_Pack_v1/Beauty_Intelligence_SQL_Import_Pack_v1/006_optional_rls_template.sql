@@ -1,0 +1,18 @@
+-- OPTIONAL RLS TEMPLATE
+-- Do not run this unchanged until the application access model is confirmed.
+--
+-- Recommended principle:
+--   * Customer-facing clients may read only approved/current/customer-usable summaries.
+--   * Research payloads, evidence review and regulatory editing remain server-side.
+--   * Inserts/updates should normally use trusted Edge Functions or service-role workflows.
+--
+-- Example only:
+--
+-- alter table public.beautydna_ingredient_intelligence enable row level security;
+--
+-- create policy "public can read approved customer ingredients"
+-- on public.beautydna_ingredient_intelligence
+-- for select
+-- using (review_status = 'approved' and customer_usable = true);
+--
+-- Do not expose beautydna_ingredient_research_payloads to anonymous clients.

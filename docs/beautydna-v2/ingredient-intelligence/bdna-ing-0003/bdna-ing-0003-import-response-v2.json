@@ -1,0 +1,146 @@
+﻿{
+    "ok":  true,
+    "version":  "beautydna-v2-product-import-batch-v1",
+    "source_type":  "beautydna_launch_catalog",
+    "source_key":  "BDNA-ING-0003-launch-batch-v1",
+    "total_count":  5,
+    "processed_count":  5,
+    "success_count":  5,
+    "failed_count":  0,
+    "created_count":  5,
+    "updated_count":  0,
+    "ingredient_success_count":  5,
+    "ingredient_failure_count":  0,
+    "total_product_ingredient_links":  167,
+    "total_review_queue_inserted":  167,
+    "results":  [
+                    {
+                        "index":  0,
+                        "ok":  true,
+                        "product_title":  "CurÃ©l Intensive Moisture Care Foaming Facial Wash 150ml",
+                        "source_key":  "BDNA-ING-0003-gentle-cleanser-curel-4901301269348",
+                        "created_or_updated":  "created",
+                        "product_id":  "5677258a-87b5-48b7-acb0-02b855e2f167",
+                        "product_dna_id":  "02ac259e-dc07-40c8-9254-c7d22d2fc4df",
+                        "ingredient_ingestion_counts":  {
+                                                            "input_ingredient_count":  15,
+                                                            "matched_ingredient_count":  0,
+                                                            "approved_match_count":  0,
+                                                            "alias_match_count":  0,
+                                                            "missing_ingredient_count":  15,
+                                                            "product_ingredient_link_count":  15,
+                                                            "review_queue_inserted_count":  15
+                                                        },
+                        "removed_product_columns":  [
+                                                        "product_image_url",
+                                                        "sku"
+                                                    ],
+                        "removed_product_dna_columns":  [
+                                                            "metadata"
+                                                        ]
+                    },
+                    {
+                        "index":  1,
+                        "ok":  true,
+                        "product_title":  "Hada Labo Gokujyun Premium Hyaluronic Lotion 170ml",
+                        "source_key":  "BDNA-ING-0003-hydrating-lotion-hada-labo-167012",
+                        "created_or_updated":  "created",
+                        "product_id":  "48faa3de-bfe6-4e4c-9958-754088754f50",
+                        "product_dna_id":  "906e61dd-654d-4086-b185-21bfc6a725b7",
+                        "ingredient_ingestion_counts":  {
+                                                            "input_ingredient_count":  33,
+                                                            "matched_ingredient_count":  0,
+                                                            "approved_match_count":  0,
+                                                            "alias_match_count":  0,
+                                                            "missing_ingredient_count":  33,
+                                                            "product_ingredient_link_count":  33,
+                                                            "review_queue_inserted_count":  33
+                                                        },
+                        "removed_product_columns":  [
+                                                        "product_image_url",
+                                                        "sku"
+                                                    ],
+                        "removed_product_dna_columns":  [
+                                                            "metadata"
+                                                        ]
+                    },
+                    {
+                        "index":  2,
+                        "ok":  true,
+                        "product_title":  "ETVOS Moisturizing Serum 50ml",
+                        "source_key":  "BDNA-ING-0003-barrier-serum-etvos-cn10694",
+                        "created_or_updated":  "created",
+                        "product_id":  "349821be-6f9a-4e4f-bf84-b922986547ca",
+                        "product_dna_id":  "19b563e7-c8f5-4768-8e0a-fc9503a5b592",
+                        "ingredient_ingestion_counts":  {
+                                                            "input_ingredient_count":  54,
+                                                            "matched_ingredient_count":  0,
+                                                            "approved_match_count":  0,
+                                                            "alias_match_count":  0,
+                                                            "missing_ingredient_count":  54,
+                                                            "product_ingredient_link_count":  54,
+                                                            "review_queue_inserted_count":  54
+                                                        },
+                        "removed_product_columns":  [
+                                                        "product_image_url",
+                                                        "sku"
+                                                    ],
+                        "removed_product_dna_columns":  [
+                                                            "metadata"
+                                                        ]
+                    },
+                    {
+                        "index":  3,
+                        "ok":  true,
+                        "product_title":  "CurÃ©l Intensive Moisture Facial Cream 40g",
+                        "source_key":  "BDNA-ING-0003-moisturizer-curel-4901301236210",
+                        "created_or_updated":  "created",
+                        "product_id":  "41f6385a-0d61-4cb3-ac7a-fdaf9c294031",
+                        "product_dna_id":  "8deca43e-b74b-443d-9f6e-0d2c89e03272",
+                        "ingredient_ingestion_counts":  {
+                                                            "input_ingredient_count":  15,
+                                                            "matched_ingredient_count":  0,
+                                                            "approved_match_count":  0,
+                                                            "alias_match_count":  0,
+                                                            "missing_ingredient_count":  15,
+                                                            "product_ingredient_link_count":  15,
+                                                            "review_queue_inserted_count":  15
+                                                        },
+                        "removed_product_columns":  [
+                                                        "product_image_url",
+                                                        "sku"
+                                                    ],
+                        "removed_product_dna_columns":  [
+                                                            "metadata"
+                                                        ]
+                    },
+                    {
+                        "index":  4,
+                        "ok":  true,
+                        "product_title":  "ANESSA Perfect UV Sunscreen Skincare Milk NA SPF50+ PA++++ 60ml",
+                        "source_key":  "BDNA-ING-0003-sunscreen-anessa-h16501",
+                        "created_or_updated":  "created",
+                        "product_id":  "976f45a3-a673-4dc7-b6a7-2e4a24b32e35",
+                        "product_dna_id":  "e5d97b2f-98b2-469d-94fc-fdb0ad1cd353",
+                        "ingredient_ingestion_counts":  {
+                                                            "input_ingredient_count":  50,
+                                                            "matched_ingredient_count":  0,
+                                                            "approved_match_count":  0,
+                                                            "alias_match_count":  0,
+                                                            "missing_ingredient_count":  50,
+                                                            "product_ingredient_link_count":  50,
+                                                            "review_queue_inserted_count":  50
+                                                        },
+                        "removed_product_columns":  [
+                                                        "product_image_url",
+                                                        "sku"
+                                                    ],
+                        "removed_product_dna_columns":  [
+                                                            "metadata"
+                                                        ]
+                    }
+                ],
+    "errors":  [
+
+               ]
+}
