@@ -132,6 +132,9 @@ update public.beautydna_products
 set
   source_type = metadata ->> 'source_type',
   source_key = metadata ->> 'source_key',
+  product_name = metadata -> 'raw_product' ->> 'product_name',
+  category = metadata -> 'raw_product' ->> 'category',
+  routine_step = metadata -> 'raw_product' ->> 'routine_step',
   approval_status = 'approved',
   metadata = metadata || jsonb_build_object(
     'bdna_pdna_0001_review',
@@ -150,6 +153,8 @@ where id = '5677258a-87b5-48b7-acb0-02b855e2f167'::uuid
 
 update public.beautydna_product_dna
 set
+  key_ingredients = array['Glycyrrhizic Acid 2K','Glycerin']::text[],
+  ingredient_flags = array['rinse_off','japan_quasi_drug','fragrance_free','colorant_free']::text[],
   skin_type_fit = array['dry','sensitive']::text[],
   main_concerns_it_helps =
     array['dryness','barrier_support','sensitivity']::text[],
@@ -167,6 +172,11 @@ set
   beautydna_match_notes =
     'Governed review approved. Unsupported provisional broad skin-type fit, dehydration timing inference, low sensitivity risk, low comedogenic risk, and alcohol-free classification were removed or returned to unknown rather than guessed.',
   dna_payload = dna_payload || jsonb_build_object(
+    'build_id', 'BDNA-ING-0003',
+    'formula_market', 'JP',
+    'formula_verified_at', '2026-07-12',
+    'ingredient_language', 'ja_labeling_names',
+    'shopify_link_pending', true,
     'bdna_pdna_0001_review',
     jsonb_build_object(
       'build_id', 'BDNA-PDNA-0001',
@@ -193,6 +203,9 @@ update public.beautydna_products
 set
   source_type = metadata ->> 'source_type',
   source_key = metadata ->> 'source_key',
+  product_name = metadata -> 'raw_product' ->> 'product_name',
+  category = metadata -> 'raw_product' ->> 'category',
+  routine_step = metadata -> 'raw_product' ->> 'routine_step',
   approval_status = 'approved',
   metadata = metadata || jsonb_build_object(
     'bdna_pdna_0001_review',
@@ -211,6 +224,8 @@ where id = '48faa3de-bfe6-4e4c-9958-754088754f50'::uuid
 
 update public.beautydna_product_dna
 set
+  key_ingredients = array['Hyaluronic Acid derivatives','Sacran','Hydroxyethyl Urea']::text[],
+  ingredient_flags = array['leave_on','fragrance_free','colorant_free','ethanol_free','paraben_free','mineral_oil_free']::text[],
   skin_type_fit = array[]::text[],
   main_concerns_it_helps =
     array['dehydration','dryness']::text[],
@@ -227,6 +242,11 @@ set
   beautydna_match_notes =
     'Governed review approved. Unsupported all-skin-type assignment, barrier-support classification, generic hyaluronic-acid avoidance rule, low sensitivity risk, low comedogenic risk, and unverified timing were removed or returned to unknown.',
   dna_payload = dna_payload || jsonb_build_object(
+    'build_id', 'BDNA-ING-0003',
+    'formula_market', 'JP',
+    'formula_verified_at', '2026-07-12',
+    'ingredient_language', 'ja_labeling_names',
+    'shopify_link_pending', true,
     'bdna_pdna_0001_review',
     jsonb_build_object(
       'build_id', 'BDNA-PDNA-0001',
@@ -253,6 +273,9 @@ update public.beautydna_products
 set
   source_type = metadata ->> 'source_type',
   source_key = metadata ->> 'source_key',
+  product_name = metadata -> 'raw_product' ->> 'product_name',
+  category = metadata -> 'raw_product' ->> 'category',
+  routine_step = metadata -> 'raw_product' ->> 'routine_step',
   approval_status = 'approved',
   metadata = metadata || jsonb_build_object(
     'bdna_pdna_0001_review',
@@ -271,6 +294,8 @@ where id = '349821be-6f9a-4e4f-bf84-b922986547ca'::uuid
 
 update public.beautydna_product_dna
 set
+  key_ingredients = array['Ceramide AG','Ceramide AP','Ceramide EOP','Ceramide NG','Ceramide NP','Sodium Hyaluronate']::text[],
+  ingredient_flags = array['leave_on','essential_oil_present','human_type_ceramides','airless_packaging']::text[],
   skin_type_fit = array['dry','sensitive']::text[],
   main_concerns_it_helps =
     array['dehydration','dryness','barrier_support','sensitivity']::text[],
@@ -288,6 +313,11 @@ set
   beautydna_match_notes =
     'Governed review approved. Normal/combination skin assignments were removed because the official page specifically identifies dry, inner-dry, and sensitive skin. Comedogenic and pregnancy status remain unknown.',
   dna_payload = dna_payload || jsonb_build_object(
+    'build_id', 'BDNA-ING-0003',
+    'formula_market', 'JP',
+    'formula_verified_at', '2026-07-12',
+    'ingredient_language', 'ja_labeling_names',
+    'shopify_link_pending', true,
     'bdna_pdna_0001_review',
     jsonb_build_object(
       'build_id', 'BDNA-PDNA-0001',
@@ -314,6 +344,9 @@ update public.beautydna_products
 set
   source_type = metadata ->> 'source_type',
   source_key = metadata ->> 'source_key',
+  product_name = metadata -> 'raw_product' ->> 'product_name',
+  category = metadata -> 'raw_product' ->> 'category',
+  routine_step = metadata -> 'raw_product' ->> 'routine_step',
   approval_status = 'approved',
   metadata = metadata || jsonb_build_object(
     'bdna_pdna_0001_review',
@@ -333,6 +366,8 @@ where id = '41f6385a-0d61-4cb3-ac7a-fdaf9c294031'::uuid
 
 update public.beautydna_product_dna
 set
+  key_ingredients = array['Allantoin','Pseudo-Ceramide','Glycerin']::text[],
+  ingredient_flags = array['leave_on','japan_quasi_drug','fragrance_free','colorant_free','ethanol_free']::text[],
   skin_type_fit = array['dry','sensitive']::text[],
   main_concerns_it_helps =
     array['dryness','barrier_support','sensitivity']::text[],
@@ -350,6 +385,11 @@ set
   beautydna_match_notes =
     'Governed review approved without reopening Ingredient Intelligence. Normal/combination skin assignments, dehydration classification, and unsupported low comedogenic-risk value were removed. Three BDNA-ING-0004 ambiguous class identities remain needs_review exactly as governed.',
   dna_payload = dna_payload || jsonb_build_object(
+    'build_id', 'BDNA-ING-0003',
+    'formula_market', 'JP',
+    'formula_verified_at', '2026-07-12',
+    'ingredient_language', 'ja_labeling_names',
+    'shopify_link_pending', true,
     'bdna_pdna_0001_review',
     jsonb_build_object(
       'build_id', 'BDNA-PDNA-0001',
@@ -378,6 +418,9 @@ update public.beautydna_products
 set
   source_type = metadata ->> 'source_type',
   source_key = metadata ->> 'source_key',
+  product_name = metadata -> 'raw_product' ->> 'product_name',
+  category = metadata -> 'raw_product' ->> 'category',
+  routine_step = metadata -> 'raw_product' ->> 'routine_step',
   approval_status = 'approved',
   metadata = metadata || jsonb_build_object(
     'bdna_pdna_0001_review',
@@ -396,6 +439,8 @@ where id = '976f45a3-a673-4dc7-b6a7-2e4a24b32e35'::uuid
 
 update public.beautydna_product_dna
 set
+  key_ingredients = array['Zinc Oxide','Titanium Dioxide','Uvinul A Plus','Tinosorb S','Uvinul T 150']::text[],
+  ingredient_flags = array['leave_on','spf50_plus','pa_four_plus','water_resistant','fragrance_present','ethanol_present']::text[],
   skin_type_fit = array[]::text[],
   main_concerns_it_helps =
     array['sun_protection','pigmentation']::text[],
@@ -417,6 +462,11 @@ set
   beautydna_match_notes =
     'Governed review approved. Unsupported normal/combination/oily skin-type assignment, photoaging classification, and eye-area sensitivity classification were removed. Medium sensitivity risk is a BeautyDNA inference from manufacturer-declared ethanol, fragrance and multiple UV filters, not a manufacturer risk rating.',
   dna_payload = dna_payload || jsonb_build_object(
+    'build_id', 'BDNA-ING-0003',
+    'formula_market', 'JP',
+    'formula_verified_at', '2026-07-12',
+    'ingredient_language', 'ja_labeling_names',
+    'shopify_link_pending', true,
     'bdna_pdna_0001_review',
     jsonb_build_object(
       'build_id', 'BDNA-PDNA-0001',
