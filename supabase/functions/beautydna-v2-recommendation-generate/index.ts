@@ -230,13 +230,20 @@ function getProductRole(product, dna) {
 }
 
 function isProductSafeForProduction(product, dna) {
-  const productStatus = cleanLower(product?.shopify_status);
+  const productApprovalStatus = cleanLower(product?.approval_status);
+  const shopifyStatus = cleanLower(product?.shopify_status);
   const dnaStatus = cleanLower(dna?.approval_status);
+  const shopifyVariantId = typeof product?.shopify_variant_id === "string"
+    ? product.shopify_variant_id.trim()
+    : "";
 
-  if (productStatus === "rejected") return false;
+  if (productApprovalStatus === "rejected") return false;
+  if (shopifyStatus === "rejected") return false;
   if (dnaStatus === "rejected") return false;
 
-  return dnaStatus === "approved";
+  return productApprovalStatus === "approved" &&
+    dnaStatus === "approved" &&
+    shopifyVariantId.length > 0;
 }
 
 function canIncludeProduct(product, dna, includeNeedsReview) {
@@ -244,10 +251,12 @@ function canIncludeProduct(product, dna, includeNeedsReview) {
 
   if (!includeNeedsReview) return false;
 
-  const productStatus = cleanLower(product?.shopify_status);
+  const productApprovalStatus = cleanLower(product?.approval_status);
+  const shopifyStatus = cleanLower(product?.shopify_status);
   const dnaStatus = cleanLower(dna?.approval_status);
 
-  if (productStatus === "rejected") return false;
+  if (productApprovalStatus === "rejected") return false;
+  if (shopifyStatus === "rejected") return false;
   if (dnaStatus === "rejected") return false;
 
   return true;
