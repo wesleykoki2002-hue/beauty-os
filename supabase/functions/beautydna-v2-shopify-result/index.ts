@@ -407,6 +407,35 @@ serve(async (request: Request) => {
       },
     );
 
+    const candidateCounts =
+      typeof recommendation.candidate_counts === "object" &&
+        recommendation.candidate_counts !== null
+        ? recommendation.candidate_counts as JsonRecord
+        : {};
+
+    const candidatesScored =
+      typeof candidateCounts.candidates_scored === "number"
+        ? candidateCounts.candidates_scored
+        : null;
+
+    if (candidatesScored === 0) {
+      return jsonResponse(
+        buildSafeCustomerPayload(
+          recommendation,
+          {
+            profile: recommendation.profile || profile,
+            explanations: {},
+            ingredient_highlights: {},
+            cautions: {},
+            warnings: [],
+          },
+          debug,
+        ),
+        200,
+        allowedOrigin,
+      );
+    }
+
     const explanation = await callBeautyDnaFunction(
       "beautydna-v2-recommendation-explain",
       {
