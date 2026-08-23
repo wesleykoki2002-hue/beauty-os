@@ -21,7 +21,7 @@ $ErrorActionPreference = "Stop"
     $FeatureName = "BDNA-SHOP-0001 BeautyDNA Offline Shopify Catalog Adapter and Launch Product Linkage Foundation"
     $BuildTitle = $FeatureName
     $TemplateKey = "athena-feature-completion-gate-v1"
-    $ProfileKey = "bdna-shop-0001-external-automatic-qa-v2"
+    $ProfileKey = "bdna-shop-0001-external-automatic-qa-v3"
 
     $ManifestPath = Join-Path $Repo `
         "supabase\tests\evidence\20260823_bdna_shop_0001_automatic_qa_profile.json"
@@ -318,10 +318,15 @@ $ErrorActionPreference = "Stop"
             [string]$Label
         )
 
-        $Rows = @($Response)
+        $Rows = @(
+            $Response |
+            Where-Object {
+                $null -ne $_
+            }
+        )
 
         if ($Rows.Count -ne 1) {
-            throw "$Label expected exactly one row; received $($Rows.Count)."
+            throw "$Label expected exactly one non-null row; received $($Rows.Count)."
         }
 
         return $Rows[0]
@@ -389,7 +394,7 @@ $ErrorActionPreference = "Stop"
     }
 
     Write-Host "============================================================"
-    Write-Host " BDNA-SHOP-0001 EXTERNAL AUTOMATIC QA v2"
+    Write-Host " BDNA-SHOP-0001 EXTERNAL AUTOMATIC QA v3"
     Write-Host "============================================================"
 
     New-Item -ItemType Directory -Path $Scratch -Force |
@@ -882,10 +887,15 @@ $ErrorActionPreference = "Stop"
             "build_session_title=eq.$(Encode-FilterValue $BuildTitle)&" +
             "select=*"
 
+        $PacketResponse = Invoke-AthenaRest `
+            -Method GET `
+            -TableAndQuery $PacketQuery
+
         $PacketRows = @(
-            Invoke-AthenaRest `
-                -Method GET `
-                -TableAndQuery $PacketQuery
+            $PacketResponse |
+            Where-Object {
+                $null -ne $_
+            }
         )
 
         if ($PacketRows.Count -gt 1) {
@@ -1118,10 +1128,15 @@ $ErrorActionPreference = "Stop"
             "qa_run_id=eq.$QaRunId&" +
             "select=id,check_key,status,actual_result,notes,evidence,warning_acknowledged_at,warning_acknowledged_by,warning_acknowledgement_notes"
 
+        $ChecksResponse = Invoke-AthenaRest `
+            -Method GET `
+            -TableAndQuery $ChecksQuery
+
         $Checks = @(
-            Invoke-AthenaRest `
-                -Method GET `
-                -TableAndQuery $ChecksQuery
+            $ChecksResponse |
+            Where-Object {
+                $null -ne $_
+            }
         )
 
         $RequiredKeys = @(
@@ -1386,10 +1401,15 @@ $ErrorActionPreference = "Stop"
             }
         }
 
+        $FinalChecksResponse = Invoke-AthenaRest `
+            -Method GET `
+            -TableAndQuery $ChecksQuery
+
         $FinalChecks = @(
-            Invoke-AthenaRest `
-                -Method GET `
-                -TableAndQuery $ChecksQuery
+            $FinalChecksResponse |
+            Where-Object {
+                $null -ne $_
+            }
         )
 
         $BlockingPreRecording = @(
@@ -1545,7 +1565,7 @@ $ErrorActionPreference = "Stop"
 
         Write-Host ""
         Write-Host "============================================================"
-        Write-Host " BDNA-SHOP-0001 EXTERNAL AUTOMATIC QA v2: PASS"
+        Write-Host " BDNA-SHOP-0001 EXTERNAL AUTOMATIC QA v3: PASS"
         Write-Host "============================================================"
         Write-Host "PROJECT=Beauty OS / BeautyDNA"
         Write-Host "MODULE=shopify-cart-integration"
