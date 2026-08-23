@@ -1,0 +1,51 @@
+{
+  "profile_key": "bdna-shop-0001-external-automatic-qa-v2",
+  "profile_type": "cross_project_external_automatic_qa",
+  "project_key": "beautydna",
+  "module_key": "shopify-cart-integration",
+  "feature_name": "BDNA-SHOP-0001 BeautyDNA Offline Shopify Catalog Adapter and Launch Product Linkage Foundation",
+  "build_session_title": "BDNA-SHOP-0001 BeautyDNA Offline Shopify Catalog Adapter and Launch Product Linkage Foundation",
+  "route_path": null,
+  "template_key": "athena-feature-completion-gate-v1",
+  "beauty_supabase_project_ref": "hidsyvanaipxxyyhjgmc",
+  "athena_supabase_project_ref": "voiwlcvfahykdldtjeqy",
+  "timer_session_id": "221b5e9e-95d0-4672-9039-9b24651cc0f1",
+  "implementation_commit": "2ef7970c3f6a17eab1548180af2f83dfce3ab489",
+  "migration_version": "20260823103000",
+  "migration_sha256": "320b872b63614dd3fb5435da755a64a7fb828e03581178101db5d4371d2f173f",
+  "canonical_audit_sha256": "c7f4c5cbb50ab7c98891971a3c650dae6152a6c1fbd3d419fb48e47c24ae4fae",
+  "expected_implementation_hashes": {
+    "audits/BDNA-SHOP-0001_shopify_linkage_guard.sql": "c7f4c5cbb50ab7c98891971a3c650dae6152a6c1fbd3d419fb48e47c24ae4fae",
+    "supabase/functions/beautydna-v2-shopify-catalog-adapter/adapter.ts": "db0ebf064bcdce05e9d9569a937be8688b4c87862f9fb29f4c84b995eab8147c",
+    "supabase/functions/beautydna-v2-shopify-catalog-adapter/adapter_test.ts": "cd66df174628ecc90490a2bab1b6f89575829d423a28208491eff0cb128061d4",
+    "supabase/functions/beautydna-v2-shopify-catalog-adapter/fixtures/launch-products.v1.json": "1d207c349ea58e7efcdd8d739d9e7b5c683ee637ad4ec07e79666ba2395aa035",
+    "supabase/migrations/20260823103000_bdna_shop_0001_shopify_linkage_guard.sql": "320b872b63614dd3fb5435da755a64a7fb828e03581178101db5d4371d2f173f"
+  },
+  "required_check_keys": [
+    "no_negative_values",
+    "calculation_verified",
+    "no_hardcoded_planning_values",
+    "terminal_build_clean",
+    "core_pages_regression_checked",
+    "athena_cto_memory_recorded",
+    "route_or_function_exists",
+    "ui_shows_expected_new_fields",
+    "database_read_verified",
+    "database_write_verified",
+    "saved_row_verified",
+    "rls_policy_reviewed"
+  ],
+  "pre_recording_policy": {
+    "athena_cto_memory_recorded": "pending_until_completion_reconciliation",
+    "core_pages_regression_checked": "not_applicable_external_beauty_build",
+    "ui_shows_expected_new_fields": "not_applicable_no_ui_change",
+    "all_other_checks": "machine_verified_pass_required"
+  },
+  "scope_guards": {
+    "live_shopify_calls_allowed": false,
+    "fabricated_shopify_ids_allowed": false,
+    "recommendation_readiness_direct_write_allowed": false,
+    "beauty_schema_write_during_qa": false,
+    "athena_source_mutation_allowed": false
+  }
+}
