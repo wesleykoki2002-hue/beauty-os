@@ -21,7 +21,7 @@ $ErrorActionPreference = "Stop"
     $FeatureName = "BDNA-SHOP-0001 BeautyDNA Offline Shopify Catalog Adapter and Launch Product Linkage Foundation"
     $BuildTitle = $FeatureName
     $TemplateKey = "athena-feature-completion-gate-v1"
-    $ProfileKey = "bdna-shop-0001-external-automatic-qa-v3"
+    $ProfileKey = "bdna-shop-0001-external-automatic-qa-v4"
 
     $ManifestPath = Join-Path $Repo `
         "supabase\tests\evidence\20260823_bdna_shop_0001_automatic_qa_profile.json"
@@ -394,7 +394,7 @@ $ErrorActionPreference = "Stop"
     }
 
     Write-Host "============================================================"
-    Write-Host " BDNA-SHOP-0001 EXTERNAL AUTOMATIC QA v3"
+    Write-Host " BDNA-SHOP-0001 EXTERNAL AUTOMATIC QA v4"
     Write-Host "============================================================"
 
     New-Item -ItemType Directory -Path $Scratch -Force |
@@ -987,83 +987,217 @@ $ErrorActionPreference = "Stop"
         # H. Create or reuse QA run/checklist from canonical template
         # --------------------------------------------------------
 
-        if ([string]::IsNullOrWhiteSpace([string]$Packet.qa_run_id)) {
-            $TemplateQuery =
-                "athena_qa_templates?" +
-                "template_key=eq.$(Encode-FilterValue $TemplateKey)&" +
-                "select=template_key,checklist"
+        $TemplateQuery =
+            "athena_qa_templates?" +
+            "template_key=eq.$(Encode-FilterValue $TemplateKey)&" +
+            "select=template_key,checklist"
 
-            $Template = Require-SingleRow `
-                -Response (
-                    Invoke-AthenaRest `
-                        -Method GET `
-                        -TableAndQuery $TemplateQuery
-                ) `
-                -Label "QA template"
+        $Template = Require-SingleRow `
+            -Response (
+                Invoke-AthenaRest `
+                    -Method GET `
+                    -TableAndQuery $TemplateQuery
+            ) `
+            -Label "QA template"
 
-            $Checklist = @($Template.checklist)
+        $Checklist = @(
+            $Template.checklist |
+            Where-Object {
+                $null -ne $_
+            }
+        )
 
-            if ($Checklist.Count -eq 0) {
-                throw "Canonical QA template has no checks."
+        if ($Checklist.Count -eq 0) {
+            throw "Canonical QA template has no checks."
+        }
+
+        $TemplateCheckKeys = @(
+            $Checklist |
+            ForEach-Object {
+                [string]$_.check_key
+            } |
+            Sort-Object
+        )
+
+        function Assert-PersistedChecklistMatchesTemplate {
+            param(
+                [string]$QaRunIdToCheck,
+                [string]$Label
+            )
+
+            $PersistedResponse = Invoke-AthenaRest `
+                -Method GET `
+                -TableAndQuery (
+                    "athena_qa_check_results?" +
+                    "qa_run_id=eq.$QaRunIdToCheck&" +
+                    "select=id,check_key,status"
+                )
+
+            $PersistedChecks = @(
+                $PersistedResponse |
+                Where-Object {
+                    $null -ne $_
+                }
+            )
+
+            if ($PersistedChecks.Count -ne $Checklist.Count) {
+                throw (
+                    "$Label checklist row count mismatch. Expected=" +
+                    $Checklist.Count +
+                    " Actual=" +
+                    $PersistedChecks.Count
+                )
             }
 
-            $QaRunKey =
-                "beautydna-bdna-shop-0001-" +
-                [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds()
+            $DuplicateKeys = @(
+                $PersistedChecks |
+                Group-Object check_key |
+                Where-Object {
+                    $_.Count -gt 1
+                }
+            )
 
-            $RunBody = @{
-                qa_run_key = $QaRunKey
-                project_key = $ProjectKey
-                module_key = $ModuleKey
-                feature_name = $FeatureName
-                route_path = $null
-                template_key = $TemplateKey
-                build_session_title = $BuildTitle
-                status = "pending"
-                summary = [string]$Packet.summary
-                started_at = [DateTime]::UtcNow.ToString("o")
+            if ($DuplicateKeys.Count -ne 0) {
+                throw "$Label contains duplicate QA check keys."
             }
 
-            $Run = Require-SingleRow `
-                -Response (
-                    Invoke-AthenaRest `
-                        -Method POST `
-                        -TableAndQuery "athena_qa_runs" `
-                        -Body $RunBody
-                ) `
-                -Label "QA run insert"
+            $PersistedKeys = @(
+                $PersistedChecks |
+                ForEach-Object {
+                    [string]$_.check_key
+                } |
+                Sort-Object
+            )
 
-            $QaRunId = [string]$Run.id
+            if ($PersistedKeys.Count -ne $TemplateCheckKeys.Count) {
+                throw "$Label checklist key count mismatch."
+            }
 
-            $CheckRows = @()
-
-            foreach ($Check in $Checklist) {
-                $CheckRows += @{
-                    qa_run_id = $QaRunId
-                    check_key = [string]$Check.check_key
-                    check_name = [string]$Check.check_name
-                    category = [string]$Check.category
-                    status = "pending"
-                    severity = [string]$Check.severity
-                    expected_result = [string]$Check.expected_result
-                    actual_result = $null
-                    evidence = @{}
-                    notes = $null
-                    warning_acknowledged_at = $null
-                    warning_acknowledged_by = $null
-                    warning_acknowledgement_notes = $null
+            for ($Index = 0; $Index -lt $TemplateCheckKeys.Count; $Index++) {
+                if ($PersistedKeys[$Index] -ne $TemplateCheckKeys[$Index]) {
+                    throw (
+                        "$Label checklist key mismatch. Expected=" +
+                        $TemplateCheckKeys[$Index] +
+                        " Actual=" +
+                        $PersistedKeys[$Index]
+                    )
                 }
             }
 
-            $InsertedChecks = @(
-                Invoke-AthenaRest `
+            return $PersistedChecks
+        }
+
+        if ([string]::IsNullOrWhiteSpace([string]$Packet.qa_run_id)) {
+            $CandidateRunQuery =
+                "athena_qa_runs?" +
+                "project_key=eq.$(Encode-FilterValue $ProjectKey)&" +
+                "module_key=eq.$(Encode-FilterValue $ModuleKey)&" +
+                "feature_name=eq.$(Encode-FilterValue $FeatureName)&" +
+                "build_session_title=eq.$(Encode-FilterValue $BuildTitle)&" +
+                "select=*"
+
+            $CandidateRunResponse = Invoke-AthenaRest `
+                -Method GET `
+                -TableAndQuery $CandidateRunQuery
+
+            $CandidateRuns = @(
+                $CandidateRunResponse |
+                Where-Object {
+                    $null -ne $_
+                }
+            )
+
+            if ($CandidateRuns.Count -gt 1) {
+                throw (
+                    "Multiple unlinked/matching QA runs exist for " +
+                    "BDNA-SHOP-0001; refusing duplicate reconciliation."
+                )
+            }
+
+            if ($CandidateRuns.Count -eq 1) {
+                $Run = $CandidateRuns[0]
+                $QaRunId = [string]$Run.id
+
+                if (
+                    $Run.project_key -ne $ProjectKey -or
+                    $Run.module_key -ne $ModuleKey -or
+                    $Run.feature_name -ne $FeatureName -or
+                    $Run.build_session_title -ne $BuildTitle -or
+                    $Run.template_key -ne $TemplateKey -or
+                    $null -ne $Run.route_path -or
+                    $Run.status -ne "pending"
+                ) {
+                    throw "Orphan QA run identity/status mismatch."
+                }
+
+                $null = Assert-PersistedChecklistMatchesTemplate `
+                    -QaRunIdToCheck $QaRunId `
+                    -Label "Orphan QA run"
+
+                Write-Host "QA_RUN_CREATED=FALSE"
+                Write-Host "QA_RUN_REUSED_ORPHAN=TRUE"
+                Write-Host "QA_RUN_REUSED_ID=$QaRunId"
+            }
+            else {
+                $QaRunKey =
+                    "beautydna-bdna-shop-0001-" +
+                    [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds()
+
+                $RunBody = @{
+                    qa_run_key = $QaRunKey
+                    project_key = $ProjectKey
+                    module_key = $ModuleKey
+                    feature_name = $FeatureName
+                    route_path = $null
+                    template_key = $TemplateKey
+                    build_session_title = $BuildTitle
+                    status = "pending"
+                    summary = [string]$Packet.summary
+                    started_at = [DateTime]::UtcNow.ToString("o")
+                }
+
+                $Run = Require-SingleRow `
+                    -Response (
+                        Invoke-AthenaRest `
+                            -Method POST `
+                            -TableAndQuery "athena_qa_runs" `
+                            -Body $RunBody
+                    ) `
+                    -Label "QA run insert"
+
+                $QaRunId = [string]$Run.id
+
+                $CheckRows = @()
+
+                foreach ($Check in $Checklist) {
+                    $CheckRows += @{
+                        qa_run_id = $QaRunId
+                        check_key = [string]$Check.check_key
+                        check_name = [string]$Check.check_name
+                        category = [string]$Check.category
+                        status = "pending"
+                        severity = [string]$Check.severity
+                        expected_result = [string]$Check.expected_result
+                        actual_result = $null
+                        evidence = @{}
+                        notes = $null
+                        warning_acknowledged_at = $null
+                        warning_acknowledged_by = $null
+                        warning_acknowledgement_notes = $null
+                    }
+                }
+
+                $null = Invoke-AthenaRest `
                     -Method POST `
                     -TableAndQuery "athena_qa_check_results" `
                     -Body $CheckRows
-            )
 
-            if ($InsertedChecks.Count -ne $CheckRows.Count) {
-                throw "QA checklist insert count mismatch."
+                $null = Assert-PersistedChecklistMatchesTemplate `
+                    -QaRunIdToCheck $QaRunId `
+                    -Label "New QA run"
+
+                Write-Host "QA_RUN_CREATED=TRUE"
+                Write-Host "QA_RUN_REUSED_ORPHAN=FALSE"
             }
 
             $LinkedPacket = Require-SingleRow `
@@ -1072,7 +1206,8 @@ $ErrorActionPreference = "Stop"
                         -Method PATCH `
                         -TableAndQuery (
                             "athena_feature_completion_packets?" +
-                            "id=eq.$PacketId"
+                            "id=eq.$PacketId&" +
+                            "qa_run_id=is.null"
                         ) `
                         -Body @{
                             qa_run_id = $QaRunId
@@ -1089,7 +1224,7 @@ $ErrorActionPreference = "Stop"
             }
 
             $Packet = $LinkedPacket
-            Write-Host "QA_RUN_CREATED=TRUE"
+            Write-Host "PACKET_QA_RUN_LINKED=TRUE"
         }
         else {
             $QaRunId = [string]$Packet.qa_run_id
@@ -1111,16 +1246,22 @@ $ErrorActionPreference = "Stop"
                 $Run.module_key -ne $ModuleKey -or
                 $Run.feature_name -ne $FeatureName -or
                 $Run.build_session_title -ne $BuildTitle -or
+                $Run.template_key -ne $TemplateKey -or
                 $null -ne $Run.route_path
             ) {
                 throw "Existing QA run identity mismatch."
             }
 
+            $null = Assert-PersistedChecklistMatchesTemplate `
+                -QaRunIdToCheck $QaRunId `
+                -Label "Existing linked QA run"
+
             Write-Host "QA_RUN_CREATED=FALSE"
+            Write-Host "QA_RUN_REUSED_ORPHAN=FALSE"
+            Write-Host "PACKET_QA_RUN_LINKED=TRUE"
         }
 
-        # --------------------------------------------------------
-        # I. Verify exact checklist contract
+        # --------------------------------------------------------        # I. Verify exact checklist contract
         # --------------------------------------------------------
 
         $ChecksQuery =
@@ -1565,7 +1706,7 @@ $ErrorActionPreference = "Stop"
 
         Write-Host ""
         Write-Host "============================================================"
-        Write-Host " BDNA-SHOP-0001 EXTERNAL AUTOMATIC QA v3: PASS"
+        Write-Host " BDNA-SHOP-0001 EXTERNAL AUTOMATIC QA v4: PASS"
         Write-Host "============================================================"
         Write-Host "PROJECT=Beauty OS / BeautyDNA"
         Write-Host "MODULE=shopify-cart-integration"
