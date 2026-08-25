@@ -1314,7 +1314,7 @@ Set-StrictMode -Version Latest
                             $null
 
                         evidence =
-                            $null
+                            @{}
 
                         notes =
                             $null
