@@ -1,0 +1,72 @@
+{
+  "profile_key": "bdna-dna-0001-external-automatic-qa-v1",
+  "profile_type": "cross_project_external_repository_only_automatic_qa",
+  "project_key": "beautydna",
+  "module_key": "dna-engine-core",
+  "feature_name": "BDNA-DNA-0001 Reusable DNA Engine Core Foundation",
+  "build_session_title": "BDNA-DNA-0001 Reusable DNA Engine Core Foundation",
+  "route_path": null,
+  "template_key": "athena-feature-completion-gate-v1",
+  "beauty_supabase_project_ref": "hidsyvanaipxxyyhjgmc",
+  "athena_supabase_project_ref": "voiwlcvfahykdldtjeqy",
+  "timer_session_id": "b3a82528-a086-4e55-ab3c-241a05a82767",
+  "implementation_commit": "35e28f29f32d494a35f8ca036d3d5f91f95fc2fd",
+  "implementation_tree": "3d2403dd318277af0d48ebe5eae36bb6776b24ba",
+  "git_evidence_sha256": "e7a092ac5fe702aaa748b1820f36eca8418a609adf7c2647b0d8a0af56185b7d",
+  "governance_exception": {
+    "rule": "U-HERMES-001",
+    "scope": "BDNA-DNA-0001 only",
+    "approved": true,
+    "execution_method": "direct_chatgpt_guided",
+    "approval_text_sha256": "9ae9474d9ef2f351b08c2616000f3bceba184ae0151d7c79b3e32596a375f086"
+  },
+  "expected_implementation_hashes": {
+    "docs/beautydna-v2/dna-engine-core-contract-v1.md": "9ce6edacbb1a012635796bed8bae8a654d849aa565c795c58313bbf6beb49824",
+    "supabase/functions/_shared/beautydna-dna-engine-core/engine.ts": "b9c8161e63fa603691b88976793119f965607870336e2956d4eb752e774cee65",
+    "supabase/functions/_shared/beautydna-dna-engine-core/engine_test.ts": "49dd24061454b8f87a1f431d70a87070a86feff8c4c6a4dbfe14df8e34239ecb"
+  },
+  "required_check_keys": [
+    "no_negative_values",
+    "calculation_verified",
+    "no_hardcoded_planning_values",
+    "terminal_build_clean",
+    "core_pages_regression_checked",
+    "athena_cto_memory_recorded",
+    "route_or_function_exists",
+    "ui_shows_expected_new_fields",
+    "database_read_verified",
+    "database_write_verified",
+    "saved_row_verified",
+    "rls_policy_reviewed"
+  ],
+  "pre_recording_policy": {
+    "pass": [
+      "no_negative_values",
+      "calculation_verified",
+      "no_hardcoded_planning_values",
+      "terminal_build_clean",
+      "route_or_function_exists"
+    ],
+    "not_applicable": [
+      "core_pages_regression_checked",
+      "ui_shows_expected_new_fields",
+      "database_read_verified",
+      "database_write_verified",
+      "saved_row_verified",
+      "rls_policy_reviewed"
+    ],
+    "pending_until_completion_reconciliation": [
+      "athena_cto_memory_recorded"
+    ]
+  },
+  "scope_guards": {
+    "beauty_database_read_required": false,
+    "beauty_database_write_allowed": false,
+    "beauty_schema_change": false,
+    "saved_row_scope": false,
+    "rls_change": false,
+    "ui_change": false,
+    "athena_source_mutation_allowed": false,
+    "timer_stop_deferred_to_completion_reconciliation": true
+  }
+}
