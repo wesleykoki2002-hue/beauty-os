@@ -1,0 +1,77 @@
+{
+    "profile_key":  "bdna-hair-0001-external-automatic-qa-v1",
+    "profile_type":  "cross_project_external_repository_only_automatic_qa",
+    "project_key":  "beautydna",
+    "module_key":  "hair-dna",
+    "feature_name":  "BDNA-HAIR-0001 Production HairDNA / ScalpDNA Domain Adapter and Profile Foundation",
+    "build_session_title":  "BDNA-HAIR-0001 Production HairDNA / ScalpDNA Domain Adapter and Profile Foundation",
+    "route_path":  null,
+    "template_key":  "athena-feature-completion-gate-v1",
+    "beauty_supabase_project_ref":  "hidsyvanaipxxyyhjgmc",
+    "athena_supabase_project_ref":  "voiwlcvfahykdldtjeqy",
+    "timer_session_id":  "dba3fadc-21e9-4517-9df8-8404ac66a078",
+    "implementation_commit":  "3962b2571e07dad6c7b3ad5f9312116e9a077df6",
+    "implementation_tree":  "8308601500cacf9d4b1f50bb1a70eaeb36a012b8",
+    "git_evidence_sha256":  "5f845dda13c86160e1e4746e22db122205ca775fbdb951aa7d4f11ef3baa80c1",
+    "governance_exception":  {
+                                 "rule":  "U-HERMES-001",
+                                 "scope":  "BDNA-HAIR-0001 only",
+                                 "approved":  true,
+                                 "execution_method":  "direct_chatgpt_guided",
+                                 "approval_text_sha256":  "e5bbcff7c1742a628867a3e0c3b708a992b9aacb2693aedbc4346d0a5dba115f",
+                                 "current_hermes_policy":  "opt_in_only_for_specific_tasks"
+                             },
+    "expected_implementation_hashes":  {
+                                           "docs/beautydna-v2/hair-dna-contract-v1.md":  "6eb1cadbc934691998a9a3555a282635c311f66488e6c1d765f688355a75a563",
+                                           "supabase/functions/_shared/beautydna-hair-dna/adapter.ts":  "8aa0a97a51e39da80a1fb3bf53810c35c64ffd7d2b4a04cd90274409a0c62a8a",
+                                           "supabase/functions/_shared/beautydna-hair-dna/adapter_test.ts":  "45572363dfed3e20e6b1139c13bed882858883fea5cfe45d0ec5e4b6ed830f31",
+                                           "supabase/functions/_shared/beautydna-dna-engine-core/engine.ts":  "b9c8161e63fa603691b88976793119f965607870336e2956d4eb752e774cee65"
+                                       },
+    "required_check_keys":  [
+                                "no_negative_values",
+                                "calculation_verified",
+                                "no_hardcoded_planning_values",
+                                "terminal_build_clean",
+                                "core_pages_regression_checked",
+                                "athena_cto_memory_recorded",
+                                "route_or_function_exists",
+                                "ui_shows_expected_new_fields",
+                                "database_read_verified",
+                                "database_write_verified",
+                                "saved_row_verified",
+                                "rls_policy_reviewed"
+                            ],
+    "pre_recording_policy":  {
+                                 "pass":  [
+                                              "no_negative_values",
+                                              "calculation_verified",
+                                              "no_hardcoded_planning_values",
+                                              "terminal_build_clean",
+                                              "route_or_function_exists"
+                                          ],
+                                 "not_applicable":  [
+                                                        "core_pages_regression_checked",
+                                                        "ui_shows_expected_new_fields",
+                                                        "database_read_verified",
+                                                        "database_write_verified",
+                                                        "saved_row_verified",
+                                                        "rls_policy_reviewed"
+                                                    ],
+                                 "pending_until_completion_reconciliation":  [
+                                                                                 "athena_cto_memory_recorded"
+                                                                             ]
+                             },
+    "scope_guards":  {
+                         "beauty_database_read_required":  false,
+                         "beauty_database_write_allowed":  false,
+                         "beauty_schema_change":  false,
+                         "saved_row_scope":  false,
+                         "rls_change":  false,
+                         "ui_change":  false,
+                         "recommendation_change":  false,
+                         "shopify_change":  false,
+                         "shared_engine_domain_logic_change":  false,
+                         "athena_source_mutation_allowed":  false,
+                         "timer_stop_deferred_to_completion_reconciliation":  true
+                     }
+}
