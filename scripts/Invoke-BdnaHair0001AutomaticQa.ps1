@@ -1129,20 +1129,20 @@ Set-StrictMode -Version Latest
 
                 security_notes =
                     @(
-                        "No network or database client exists in the generic DNA Engine Core.",
+                        "No network or database client exists in the HairDNA production adapter; the shared DNA Engine Core remains unchanged and domain-agnostic.",
                         "No secrets were introduced.",
-                        "No production SkinDNA, HairDNA, ScalpDNA, BodyDNA, MakeupDNA, recommendation, or Shopify rule set is embedded in the core.",
+                        "No SkinDNA, BodyDNA, MakeupDNA, recommendation, or Shopify rule set is introduced by BDNA-HAIR-0001; ScalpDNA capability is contained within HairDNA v1.",
                         "Beauty OS / BeautyDNA database hidsyvanaipxxyyhjgmc is not accessed by this automatic-QA profile."
                     )
 
                 missing =
                     @(
-                        "Production SkinDNA, HairDNA/ScalpDNA, BodyDNA, and MakeupDNA domain adapters remain separately governed downstream work."
+                        "SkinDNA and other post-HairDNA domain modules remain separately governed downstream work; HairDNA/ScalpDNA v1 is implemented by BDNA-HAIR-0001."
                     )
 
                 next_steps =
                     @(
-                        "Complete Athena reconciliation for BDNA-HAIR-0001, then proceed to the next canonical BeautyDNA roadmap build using the shared DNA Engine Core."
+                        "Complete Athena reconciliation for BDNA-HAIR-0001, then return to the launch-first BeautyDNA path and re-audit Ingredient Intelligence, Product DNA readiness, SkinDNA/assessment inputs, Recommendation Engine, recommendation experience, and Shopify linkage."
                     )
 
                 estimated_remaining_hours_snapshot =
@@ -1995,7 +1995,7 @@ Set-StrictMode -Version Latest
     Write-Host " BDNA-HAIR-0001 EXTERNAL AUTOMATIC QA v1: PASS"
     Write-Host "============================================================"
     Write-Host "PROJECT=Beauty OS / BeautyDNA"
-    Write-Host "MODULE=dna-engine-core"
+    Write-Host ("MODULE=" + $ModuleKey)
     Write-Host "PROFILE_KEY=$ProfileKey"
     Write-Host "IMPLEMENTATION_COMMIT=$ImplementationCommit"
     Write-Host "QA_PROFILE_HEAD=$($script:Head)"
