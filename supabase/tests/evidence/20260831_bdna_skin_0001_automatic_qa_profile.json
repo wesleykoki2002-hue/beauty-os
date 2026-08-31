@@ -1,0 +1,76 @@
+{
+    "profile_key":  "bdna-skin-0001-external-automatic-qa-v1",
+    "profile_type":  "external_repository_automatic_qa",
+    "project_key":  "beautydna",
+    "module_key":  "skin-dna",
+    "feature_name":  "BDNA-SKIN-0001 Production SkinDNA MVP Profile Bridge",
+    "build_session_title":  "BDNA-SKIN-0001 Production SkinDNA MVP Profile Bridge",
+    "route_path":  null,
+    "template_key":  "athena-feature-completion-gate-v1",
+    "beauty_supabase_project_ref":  "hidsyvanaipxxyyhjgmc",
+    "athena_supabase_project_ref":  "voiwlcvfahykdldtjeqy",
+    "timer_session_id":  "2f0f8e99-5622-4b7d-ba7e-c517aa3b5c30",
+    "implementation_commit":  "9f79b8f7368059d98e4bcba7cc0fd519ee762545",
+    "implementation_tree":  "b1a64814d03833755eb87ad9cad36dbf407ece00",
+    "git_evidence_sha256":  "5842e87fd0970dc35fc5346dfad19c03f4e6f7daf22cea86511fa690f8f5c794",
+    "governance_exception":  {
+                                 "hermes_used":  false,
+                                 "execution_method":  "direct_chatgpt_guided",
+                                 "policy":  "hermes_opt_in_only",
+                                 "build_scope":  "BDNA-SKIN-0001"
+                             },
+    "expected_implementation_hashes":  {
+                                           "supabase/functions/_shared/beautydna-skin-dna/adapter.ts":  "e17ef1560fde20c15ad9a54834f3ef15d5a4f937cb213e218c3cfe83a0efb7eb",
+                                           "supabase/functions/_shared/beautydna-skin-dna/adapter_test.ts":  "301e246d23df55733e61ad5236c0fde242066f03125b955968c972b16ce0bbd4",
+                                           "docs/beautydna-v2/skin-dna-mvp-contract-v1.md":  "8b8ae8a661b02ed909179e1c30992cf4f839a1589d7f022a4309e552d27937ef"
+                                       },
+    "required_check_keys":  [
+                                "no_negative_values",
+                                "calculation_verified",
+                                "no_hardcoded_planning_values",
+                                "terminal_build_clean",
+                                "core_pages_regression_checked",
+                                "athena_cto_memory_recorded",
+                                "route_or_function_exists",
+                                "ui_shows_expected_new_fields",
+                                "database_read_verified",
+                                "database_write_verified",
+                                "saved_row_verified",
+                                "rls_policy_reviewed"
+                            ],
+    "pre_recording_policy":  {
+                                 "pass":  [
+                                              "no_negative_values",
+                                              "calculation_verified",
+                                              "no_hardcoded_planning_values",
+                                              "terminal_build_clean",
+                                              "route_or_function_exists"
+                                          ],
+                                 "not_applicable":  [
+                                                        "core_pages_regression_checked",
+                                                        "ui_shows_expected_new_fields",
+                                                        "database_read_verified",
+                                                        "database_write_verified",
+                                                        "saved_row_verified",
+                                                        "rls_policy_reviewed"
+                                                    ],
+                                 "pending_until_completion_reconciliation":  [
+                                                                                 "athena_cto_memory_recorded"
+                                                                             ]
+                             },
+    "scope_guards":  {
+                         "beauty_database_read_required":  false,
+                         "beauty_database_write_allowed":  false,
+                         "beauty_schema_change":  false,
+                         "saved_row_scope":  false,
+                         "rls_change":  false,
+                         "ui_change":  false,
+                         "recommendation_change":  false,
+                         "shopify_change":  false,
+                         "shared_engine_domain_logic_change":  false,
+                         "athena_source_mutation_allowed":  false,
+                         "face_photo_required":  false,
+                         "medical_diagnosis_allowed":  false,
+                         "timer_stop_deferred_to_completion_reconciliation":  true
+                     }
+}
