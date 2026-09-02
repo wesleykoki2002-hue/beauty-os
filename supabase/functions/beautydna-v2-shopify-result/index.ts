@@ -14,7 +14,8 @@ function jsonResponse(
     headers: {
       "Content-Type": "application/json; charset=utf-8",
       "Access-Control-Allow-Origin": origin,
-      "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+      "Access-Control-Allow-Headers":
+        "authorization, x-client-info, apikey, content-type",
       "Access-Control-Allow-Methods": "POST, OPTIONS",
       "Vary": "Origin",
     },
@@ -83,13 +84,17 @@ function normalizeOptions(input: JsonRecord): JsonRecord {
     : {};
 
   const debug = cleanBoolean(options.debug);
-  const includeNeedsReview = debug && cleanBoolean(options.include_needs_review);
+  const includeNeedsReview = debug &&
+    cleanBoolean(options.include_needs_review);
 
   return {
     routine_steps: cleanStringArray(options.routine_steps).length
       ? cleanStringArray(options.routine_steps)
       : ["hydrating_lotion", "barrier_serum"],
-    max_products_per_step: Math.max(1, Math.min(5, cleanNumber(options.max_products_per_step, 1))),
+    max_products_per_step: Math.max(
+      1,
+      Math.min(5, cleanNumber(options.max_products_per_step, 1)),
+    ),
     include_needs_review: includeNeedsReview,
     debug,
   };
@@ -99,8 +104,7 @@ async function callBeautyDnaFunction(
   functionName: string,
   payload: JsonRecord,
 ): Promise<JsonRecord> {
-  const supabaseUrl =
-    Deno.env.get("SUPABASE_URL") ||
+  const supabaseUrl = Deno.env.get("SUPABASE_URL") ||
     "https://hidsyvanaipxxyyhjgmc.supabase.co";
 
   const internalKey = Deno.env.get("BEAUTYDNA_INTERNAL_API_KEY");
@@ -178,7 +182,10 @@ const INGREDIENT_DISPLAY_PT_BR: Record<string, string> = {
 };
 
 function escapeRegExp(value: string): string {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\function buildSafeCustomerPayload");
+  return value.replace(
+    /[.*+?^${}()|[\]\\]/g,
+    "\\function buildSafeCustomerPayload",
+  );
 }
 
 function translateCustomerText(value: unknown): string {
@@ -196,7 +203,10 @@ function translateCustomerText(value: unknown): string {
 
   for (const [raw, translated] of Object.entries(INGREDIENT_DISPLAY_PT_BR)) {
     const pattern = new RegExp(`\\b${escapeRegExp(raw)}\\b`, "gi");
-    output = output.replace(pattern, `${translated} (${raw.replace(/\b\w/g, (char) => char.toUpperCase())})`);
+    output = output.replace(
+      pattern,
+      `${translated} (${raw.replace(/\b\w/g, (char) => char.toUpperCase())})`,
+    );
   }
 
   return output;
@@ -272,14 +282,18 @@ function translateExplanationMapForCustomer(explanations: unknown): JsonRecord {
 
   const result: JsonRecord = {};
 
-  for (const [step, explanation] of Object.entries(explanations as JsonRecord)) {
+  for (
+    const [step, explanation] of Object.entries(explanations as JsonRecord)
+  ) {
     result[step] = translateExplanationForCustomer(explanation);
   }
 
   return result;
 }
 
-function translateIngredientHighlightForCustomer(ingredient: unknown): JsonRecord {
+function translateIngredientHighlightForCustomer(
+  ingredient: unknown,
+): JsonRecord {
   const source = typeof ingredient === "object" && ingredient !== null
     ? ingredient as JsonRecord
     : {};
@@ -295,7 +309,9 @@ function translateIngredientHighlightForCustomer(ingredient: unknown): JsonRecor
   };
 }
 
-function translateIngredientHighlightMapForCustomer(highlights: unknown): JsonRecord {
+function translateIngredientHighlightMapForCustomer(
+  highlights: unknown,
+): JsonRecord {
   if (typeof highlights !== "object" || highlights === null) return {};
 
   const result: JsonRecord = {};
@@ -330,15 +346,24 @@ function buildSafeCustomerPayload(
   explanation: JsonRecord,
   debug: boolean,
 ): JsonRecord {
-  const translatedExplanations = translateExplanationMapForCustomer(explanation.explanations || {});
-  const translatedIngredientHighlights = translateIngredientHighlightMapForCustomer(explanation.ingredient_highlights || {});
-  const translatedCautions = translateCautionMapForCustomer(explanation.cautions || {});
+  const translatedExplanations = translateExplanationMapForCustomer(
+    explanation.explanations || {},
+  );
+  const translatedIngredientHighlights =
+    translateIngredientHighlightMapForCustomer(
+      explanation.ingredient_highlights || {},
+    );
+  const translatedCautions = translateCautionMapForCustomer(
+    explanation.cautions || {},
+  );
 
   const safePayload: JsonRecord = {
     ok: true,
     version: VERSION,
     profile: recommendation.profile || null,
-    profile_display: translateProfileForCustomer(explanation.profile || recommendation.profile || null),
+    profile_display: translateProfileForCustomer(
+      explanation.profile || recommendation.profile || null,
+    ),
     options: {
       language: "pt-BR",
       debug,
@@ -350,7 +375,9 @@ function buildSafeCustomerPayload(
     cautions: translatedCautions,
     missing_steps: recommendation.missing_steps || [],
     warnings: translateWarningsForCustomer([
-      ...(Array.isArray(recommendation.warnings) ? recommendation.warnings : []),
+      ...(Array.isArray(recommendation.warnings)
+        ? recommendation.warnings
+        : []),
       ...(Array.isArray(explanation.warnings) ? explanation.warnings : []),
     ]),
   };
@@ -376,19 +403,27 @@ serve(async (request: Request) => {
   }
 
   if (!allowedOrigin) {
-    return jsonResponse({
-      ok: false,
-      version: VERSION,
-      error: "ORIGIN_NOT_ALLOWED",
-    }, 403, "null");
+    return jsonResponse(
+      {
+        ok: false,
+        version: VERSION,
+        error: "ORIGIN_NOT_ALLOWED",
+      },
+      403,
+      "null",
+    );
   }
 
   if (request.method !== "POST") {
-    return jsonResponse({
-      ok: false,
-      version: VERSION,
-      error: "METHOD_NOT_ALLOWED",
-    }, 405, allowedOrigin);
+    return jsonResponse(
+      {
+        ok: false,
+        version: VERSION,
+        error: "METHOD_NOT_ALLOWED",
+      },
+      405,
+      allowedOrigin,
+    );
   }
 
   try {
@@ -456,11 +491,15 @@ serve(async (request: Request) => {
       allowedOrigin,
     );
   } catch (error) {
-    return jsonResponse({
-      ok: false,
-      version: VERSION,
-      error: "SHOPIFY_RESULT_PROXY_FAILED",
-      message: error instanceof Error ? error.message : String(error),
-    }, 500, allowedOrigin);
+    return jsonResponse(
+      {
+        ok: false,
+        version: VERSION,
+        error: "SHOPIFY_RESULT_PROXY_FAILED",
+        message: error instanceof Error ? error.message : String(error),
+      },
+      500,
+      allowedOrigin,
+    );
   }
 });
