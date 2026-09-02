@@ -163,16 +163,14 @@ export type BdnaShop0002DryRunManifest = {
   live_shopify_write_authorized: false;
   beauty_database_writes: 0;
   shopify_writes: 0;
-  repository_mutation_scope:
-    "source_only_offline_dry_run_payload_generation";
+  repository_mutation_scope: "source_only_offline_dry_run_payload_generation";
   product_dna_approved_count: 5;
   ingredient_ready_count: 4;
   shopify_linkage_eligible_count: 5;
   current_real_shopify_link_count: 0;
   current_unlinked_launch_products: 5;
   complete_ingredient_coverage_claimed: false;
-  unresolved_ingredient_holds:
-    typeof BDNA_SHOP_0002_CUREL_INGREDIENT_HOLDS;
+  unresolved_ingredient_holds: typeof BDNA_SHOP_0002_CUREL_INGREDIENT_HOLDS;
   payloads: BdnaShop0002DryRunPayload[];
 };
 
@@ -382,8 +380,7 @@ export function buildBdnaShop0002DryRunPayload(
     may_perform_live_shopify_write: false,
     mutation_name: "productCreate",
 
-    idempotency_key:
-      `${BDNA_SHOP_0002_BUILD_ID}:${intent.idempotency_key}`,
+    idempotency_key: `${BDNA_SHOP_0002_BUILD_ID}:${intent.idempotency_key}`,
 
     beautydna_selector: intent.beautydna_selector,
 
@@ -426,16 +423,14 @@ export function buildBdnaShop0002DryRunManifest(
     live_shopify_write_authorized: false,
     beauty_database_writes: 0,
     shopify_writes: 0,
-    repository_mutation_scope:
-      "source_only_offline_dry_run_payload_generation",
+    repository_mutation_scope: "source_only_offline_dry_run_payload_generation",
     product_dna_approved_count: 5,
     ingredient_ready_count: 4,
     shopify_linkage_eligible_count: 5,
     current_real_shopify_link_count: 0,
     current_unlinked_launch_products: 5,
     complete_ingredient_coverage_claimed: false,
-    unresolved_ingredient_holds:
-      BDNA_SHOP_0002_CUREL_INGREDIENT_HOLDS,
+    unresolved_ingredient_holds: BDNA_SHOP_0002_CUREL_INGREDIENT_HOLDS,
     payloads: products.map((product) =>
       buildBdnaShop0002DryRunPayload(product)
     ),
