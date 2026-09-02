@@ -1,13 +1,31 @@
-﻿import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
+import {
+  createClient,
+  type SupabaseClient,
+} from "https://esm.sh/@supabase/supabase-js@2";
+
+// These import payloads and runtime-selected tables do not have generated types.
+// deno-lint-ignore no-explicit-any
+type DataRecord = Record<string, any>;
+// deno-lint-ignore no-explicit-any
+type UntypedSupabaseClient = SupabaseClient<any, "public", any>;
+type DatabaseError = {
+  message: string;
+};
+type MutationResult = {
+  data: DataRecord | null;
+  error: DatabaseError | null;
+  removed_columns: string[];
+};
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-athena-admin-key, x-beautydna-internal-key",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type, x-athena-admin-key, x-beautydna-internal-key",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-function jsonResponse(body, status = 200) {
+function jsonResponse(body: unknown, status = 200) {
   return new Response(JSON.stringify(body, null, 2), {
     status,
     headers: {
@@ -17,33 +35,34 @@ function jsonResponse(body, status = 200) {
   });
 }
 
-function cleanString(value) {
+function cleanString(value: unknown): string {
   if (typeof value !== "string") return "";
   return value.trim();
 }
 
-function cleanNumber(value, fallback = 0) {
+function cleanNumber(value: unknown, fallback = 0): number {
   const numberValue = Number(value);
   if (!Number.isFinite(numberValue)) return fallback;
   return numberValue;
 }
 
-function cleanArray(value) {
+function cleanArray(value: unknown): string[] {
   if (!Array.isArray(value)) return [];
   return value
     .map((item) => cleanString(item))
     .filter(Boolean);
 }
 
-function normalizeKey(value) {
+function normalizeKey(value: unknown): string {
   return cleanString(value)
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
 }
 
-function getUnknownColumnName(message) {
-  if (!message) return null;
+function getUnknownColumnName(message: unknown): string | null {
+  const cleanMessage = cleanString(message);
+  if (!cleanMessage) return null;
 
   const patterns = [
     /Could not find the '([^']+)' column/i,
@@ -52,16 +71,21 @@ function getUnknownColumnName(message) {
   ];
 
   for (const pattern of patterns) {
-    const match = message.match(pattern);
+    const match = cleanMessage.match(pattern);
     if (match?.[1]) return match[1];
   }
 
   return null;
 }
 
-async function insertWithColumnFallback(supabase, tableName, payload, selectColumns = "*") {
-  let safePayload = { ...payload };
-  const removedColumns = [];
+async function insertWithColumnFallback(
+  supabase: UntypedSupabaseClient,
+  tableName: string,
+  payload: DataRecord,
+  selectColumns = "*",
+): Promise<MutationResult> {
+  const safePayload = { ...payload };
+  const removedColumns: string[] = [];
 
   for (let attempt = 0; attempt < 20; attempt += 1) {
     const { data, error } = await supabase
@@ -72,7 +96,7 @@ async function insertWithColumnFallback(supabase, tableName, payload, selectColu
 
     if (!error) {
       return {
-        data,
+        data: data as DataRecord,
         error: null,
         removed_columns: removedColumns,
       };
@@ -101,9 +125,15 @@ async function insertWithColumnFallback(supabase, tableName, payload, selectColu
   };
 }
 
-async function updateWithColumnFallback(supabase, tableName, id, payload, selectColumns = "*") {
-  let safePayload = { ...payload };
-  const removedColumns = [];
+async function updateWithColumnFallback(
+  supabase: UntypedSupabaseClient,
+  tableName: string,
+  id: unknown,
+  payload: DataRecord,
+  selectColumns = "*",
+): Promise<MutationResult> {
+  const safePayload = { ...payload };
+  const removedColumns: string[] = [];
 
   for (let attempt = 0; attempt < 20; attempt += 1) {
     const { data, error } = await supabase
@@ -115,7 +145,7 @@ async function updateWithColumnFallback(supabase, tableName, id, payload, select
 
     if (!error) {
       return {
-        data,
+        data: data as DataRecord,
         error: null,
         removed_columns: removedColumns,
       };
@@ -144,7 +174,11 @@ async function updateWithColumnFallback(supabase, tableName, id, payload, select
   };
 }
 
-async function findExistingProduct(supabase, productTitle, brand) {
+async function findExistingProduct(
+  supabase: UntypedSupabaseClient,
+  productTitle: string,
+  brand: string,
+) {
   let query = supabase
     .from("beautydna_products")
     .select("id, product_title, brand, product_role")
@@ -165,12 +199,18 @@ async function findExistingProduct(supabase, productTitle, brand) {
   }
 
   return {
-    product: data,
+    product: data as DataRecord | null,
     error: null,
   };
 }
 
-async function saveProductDna(supabase, productId, productDna, sourceType, sourceKey) {
+async function saveProductDna(
+  supabase: UntypedSupabaseClient,
+  productId: string,
+  productDna: DataRecord,
+  sourceType: string,
+  sourceKey: string,
+) {
   const payload = {
     product_id: productId,
     skin_type_fit: cleanArray(productDna.skin_type_fit),
@@ -179,7 +219,9 @@ async function saveProductDna(supabase, productId, productDna, sourceType, sourc
     recommended_routine_step: cleanString(productDna.recommended_routine_step),
     usage_timing: Array.isArray(productDna.usage_timing)
       ? cleanArray(productDna.usage_timing)
-      : (cleanString(productDna.usage_timing) ? [cleanString(productDna.usage_timing)] : []),
+      : (cleanString(productDna.usage_timing)
+        ? [cleanString(productDna.usage_timing)]
+        : []),
     sensitivity_risk: cleanString(productDna.sensitivity_risk) || "unknown",
     comedogenic_risk: cleanString(productDna.comedogenic_risk) || "unknown",
     fragrance_status: cleanString(productDna.fragrance_status) || "unknown",
@@ -248,13 +290,11 @@ serve(async (req) => {
     }, 405);
   }
 
-  const expectedKey =
-    Deno.env.get("BEAUTYDNA_INTERNAL_API_KEY") ||
+  const expectedKey = Deno.env.get("BEAUTYDNA_INTERNAL_API_KEY") ||
     Deno.env.get("ATHENA_ADMIN_KEY") ||
     "";
 
-  const suppliedKey =
-    req.headers.get("x-beautydna-internal-key") ||
+  const suppliedKey = req.headers.get("x-beautydna-internal-key") ||
     req.headers.get("x-athena-admin-key") ||
     "";
 
@@ -266,8 +306,7 @@ serve(async (req) => {
   }
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL");
-  const serviceRoleKey =
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ||
+  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ||
     Deno.env.get("SERVICE_ROLE_KEY");
 
   if (!supabaseUrl || !serviceRoleKey) {
@@ -277,10 +316,10 @@ serve(async (req) => {
     }, 500);
   }
 
-  let body;
+  let body: DataRecord;
 
   try {
-    body = await req.json();
+    body = await req.json() as DataRecord;
   } catch (_error) {
     return jsonResponse({
       ok: false,
@@ -295,9 +334,9 @@ serve(async (req) => {
   const brand = cleanString(product.brand);
   const productRole = cleanString(product.product_role);
 
-  const sourceType = cleanString(body.source_type) || "beautydna-v2-product-import";
-  const sourceKey =
-    cleanString(body.source_key) ||
+  const sourceType = cleanString(body.source_type) ||
+    "beautydna-v2-product-import";
+  const sourceKey = cleanString(body.source_key) ||
     cleanString(product.sku) ||
     cleanString(product.handle) ||
     normalizeKey(`${brand}-${productTitle}`) ||
@@ -337,10 +376,12 @@ serve(async (req) => {
     product_title: productTitle,
     brand,
     product_role: productRole,
-    shopify_status: cleanString(product.shopify_status) || "needs_shopify_creation",
+    shopify_status: cleanString(product.shopify_status) ||
+      "needs_shopify_creation",
     price: cleanNumber(product.price, 0),
     currency: cleanString(product.currency) || "BRL",
-    handle: cleanString(product.handle) || normalizeKey(`${brand}-${productTitle}`),
+    handle: cleanString(product.handle) ||
+      normalizeKey(`${brand}-${productTitle}`),
     sku: cleanString(product.sku),
     shopify_product_id: cleanString(product.shopify_product_id) || null,
     shopify_variant_id: cleanString(product.shopify_variant_id) || null,
@@ -355,7 +396,11 @@ serve(async (req) => {
     },
   };
 
-  const existingProductResult = await findExistingProduct(supabase, productTitle, brand);
+  const existingProductResult = await findExistingProduct(
+    supabase,
+    productTitle,
+    brand,
+  );
 
   if (existingProductResult.error) {
     return jsonResponse({
@@ -396,7 +441,7 @@ serve(async (req) => {
     }, 500);
   }
 
-  const savedProduct = productSaveResult.data;
+  const savedProduct = productSaveResult.data!;
 
   const productDnaResult = await saveProductDna(
     supabase,
@@ -443,7 +488,8 @@ serve(async (req) => {
     if (!ingestResponse.ok || ingredientIngestion.ok === false) {
       return jsonResponse({
         ok: false,
-        error: "Product and Product DNA were saved, but ingredient ingestion failed.",
+        error:
+          "Product and Product DNA were saved, but ingredient ingestion failed.",
         product: savedProduct,
         product_dna: productDnaResult.data,
         ingredient_ingestion: ingredientIngestion,
@@ -466,4 +512,3 @@ serve(async (req) => {
     removed_product_dna_columns: productDnaResult.removed_columns,
   });
 });
-
