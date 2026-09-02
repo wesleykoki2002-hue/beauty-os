@@ -1,11 +1,31 @@
-﻿import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
+import {
+  createClient,
+  type SupabaseClient,
+} from "https://esm.sh/@supabase/supabase-js@2";
+
+// deno-lint-ignore no-explicit-any
+type DataRecord = Record<string, any>;
+// The function uses runtime-selected tables without generated database types.
+// deno-lint-ignore no-explicit-any
+type UntypedSupabaseClient = SupabaseClient<any, "public", any>;
+type NormalizedProfile = {
+  skin_type: string;
+  skin_concerns: string[];
+  sensitivity_level: string;
+  acne_prone: boolean;
+  pregnancy: boolean;
+  avoid_ingredients: string[];
+  preferred_steps: string[];
+};
+type ScoredCandidate = ReturnType<typeof scoreCandidate>;
 
 const VERSION = "beautydna-v2-recommendation-generate-v1";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-athena-admin-key, x-beautydna-internal-key",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type, x-athena-admin-key, x-beautydna-internal-key",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
@@ -29,7 +49,7 @@ const SCORE_WEIGHTS = {
   pregnancy_penalty: -25,
 };
 
-function jsonResponse(body, status = 200) {
+function jsonResponse(body: unknown, status = 200) {
   return new Response(JSON.stringify(body, null, 2), {
     status,
     headers: {
@@ -39,21 +59,21 @@ function jsonResponse(body, status = 200) {
   });
 }
 
-function cleanString(value) {
+function cleanString(value: unknown): string {
   if (typeof value !== "string") return "";
   return value.trim();
 }
 
-function cleanLower(value) {
+function cleanLower(value: unknown): string {
   return cleanString(value).toLowerCase();
 }
 
-function cleanBoolean(value, fallback = false) {
+function cleanBoolean(value: unknown, fallback = false): boolean {
   if (typeof value === "boolean") return value;
   return fallback;
 }
 
-function toArray(value) {
+function toArray(value: unknown): string[] {
   if (Array.isArray(value)) {
     return value
       .map((item) => cleanString(item))
@@ -70,27 +90,27 @@ function toArray(value) {
   return [];
 }
 
-function toLowerArray(value) {
+function toLowerArray(value: unknown): string[] {
   return toArray(value).map((item) => item.toLowerCase());
 }
 
-function uniqueArray(values) {
+function uniqueArray(values: string[]): string[] {
   return [...new Set((values || []).filter(Boolean))];
 }
 
-function parseJsonMaybe(value, fallback) {
+function parseJsonMaybe(value: unknown, fallback: DataRecord): DataRecord {
   if (value === null || value === undefined) return fallback;
-  if (typeof value === "object") return value;
+  if (typeof value === "object") return value as DataRecord;
   if (typeof value !== "string") return fallback;
 
   try {
-    return JSON.parse(value);
+    return JSON.parse(value) as DataRecord;
   } catch (_error) {
     return fallback;
   }
 }
 
-function normalizeRisk(value) {
+function normalizeRisk(value: unknown): string {
   const cleaned = cleanLower(value);
 
   if (["low", "medium", "high", "unknown"].includes(cleaned)) {
@@ -100,7 +120,7 @@ function normalizeRisk(value) {
   return "unknown";
 }
 
-function riskRank(value) {
+function riskRank(value: unknown): number {
   const normalized = normalizeRisk(value);
 
   if (normalized === "low") return 1;
@@ -110,14 +130,17 @@ function riskRank(value) {
   return 0;
 }
 
-function overlap(a, b) {
+function overlap(a: unknown, b: unknown): string[] {
   const aSet = new Set(toLowerArray(a));
   const bSet = new Set(toLowerArray(b));
 
   return [...aSet].filter((item) => bSet.has(item));
 }
 
-function containsAnyText(haystackValues, needleValues) {
+function containsAnyText(
+  haystackValues: unknown,
+  needleValues: unknown,
+): string[] {
   const haystackText = toLowerArray(haystackValues).join(" ");
   const needles = toLowerArray(needleValues);
 
@@ -126,7 +149,13 @@ function containsAnyText(haystackValues, needleValues) {
   return needles.filter((needle) => needle && haystackText.includes(needle));
 }
 
-function readOptionNumber(options, key, fallback, min, max) {
+function readOptionNumber(
+  options: DataRecord,
+  key: string,
+  fallback: number,
+  min: number,
+  max: number,
+): number {
   const raw = Number(options?.[key]);
 
   if (!Number.isFinite(raw)) return fallback;
@@ -134,11 +163,12 @@ function readOptionNumber(options, key, fallback, min, max) {
   return Math.max(min, Math.min(max, Math.floor(raw)));
 }
 
-function normalizeProfile(inputProfile) {
+function normalizeProfile(
+  inputProfile: DataRecord | null | undefined,
+): NormalizedProfile {
   const profile = inputProfile || {};
 
-  const skinType =
-    cleanLower(profile.skin_type) ||
+  const skinType = cleanLower(profile.skin_type) ||
     cleanLower(profile.skinType) ||
     "unknown";
 
@@ -148,8 +178,7 @@ function normalizeProfile(inputProfile) {
     ...toLowerArray(profile.main_concerns),
   ]);
 
-  const sensitivityLevel =
-    cleanLower(profile.sensitivity_level) ||
+  const sensitivityLevel = cleanLower(profile.sensitivity_level) ||
     cleanLower(profile.sensitivity) ||
     "unknown";
 
@@ -168,59 +197,52 @@ function normalizeProfile(inputProfile) {
   };
 }
 
-function profileFromPassport(passport) {
+function profileFromPassport(passport: DataRecord): NormalizedProfile {
   const payload = parseJsonMaybe(passport?.passport_payload, {});
   const faceDna = parseJsonMaybe(passport?.face_dna, {});
   const profile = parseJsonMaybe(passport?.profile, {});
 
   return normalizeProfile({
-    skin_type:
-      passport?.skin_type ||
+    skin_type: passport?.skin_type ||
       payload?.skin_type ||
       faceDna?.skin_type ||
       profile?.skin_type,
 
-    skin_concerns:
-      passport?.skin_concerns ||
+    skin_concerns: passport?.skin_concerns ||
       payload?.skin_concerns ||
       faceDna?.skin_concerns ||
       profile?.skin_concerns ||
       payload?.concerns ||
       faceDna?.concerns,
 
-    sensitivity_level:
-      passport?.sensitivity_level ||
+    sensitivity_level: passport?.sensitivity_level ||
       payload?.sensitivity_level ||
       faceDna?.sensitivity_level ||
       profile?.sensitivity_level,
 
-    acne_prone:
-      passport?.acne_prone ||
+    acne_prone: passport?.acne_prone ||
       payload?.acne_prone ||
       faceDna?.acne_prone ||
       profile?.acne_prone,
 
-    pregnancy:
-      passport?.pregnancy ||
+    pregnancy: passport?.pregnancy ||
       payload?.pregnancy ||
       faceDna?.pregnancy ||
       profile?.pregnancy,
 
-    avoid_ingredients:
-      passport?.avoid_ingredients ||
+    avoid_ingredients: passport?.avoid_ingredients ||
       payload?.avoid_ingredients ||
       faceDna?.avoid_ingredients ||
       profile?.avoid_ingredients,
 
-    preferred_steps:
-      passport?.preferred_steps ||
+    preferred_steps: passport?.preferred_steps ||
       payload?.preferred_steps ||
       faceDna?.preferred_steps ||
       profile?.preferred_steps,
   });
 }
 
-function getProductRole(product, dna) {
+function getProductRole(product: DataRecord, dna: DataRecord): string {
   return (
     cleanLower(dna?.recommended_routine_step) ||
     cleanLower(product?.product_role) ||
@@ -229,7 +251,10 @@ function getProductRole(product, dna) {
   );
 }
 
-function isProductSafeForProduction(product, dna) {
+function isProductSafeForProduction(
+  product: DataRecord,
+  dna: DataRecord,
+): boolean {
   const productApprovalStatus = cleanLower(product?.approval_status);
   const shopifyStatus = cleanLower(product?.shopify_status);
   const dnaStatus = cleanLower(dna?.approval_status);
@@ -246,7 +271,11 @@ function isProductSafeForProduction(product, dna) {
     shopifyVariantId.length > 0;
 }
 
-function canIncludeProduct(product, dna, includeNeedsReview) {
+function canIncludeProduct(
+  product: DataRecord,
+  dna: DataRecord,
+  includeNeedsReview: boolean,
+): boolean {
   if (isProductSafeForProduction(product, dna)) return true;
 
   if (!includeNeedsReview) return false;
@@ -262,18 +291,23 @@ function canIncludeProduct(product, dna, includeNeedsReview) {
   return true;
 }
 
-function scoreCandidate(candidate, profile, requestedSteps, includeNeedsReview) {
+function scoreCandidate(
+  candidate: { product: DataRecord; product_dna: DataRecord },
+  profile: NormalizedProfile,
+  requestedSteps: string[],
+  includeNeedsReview: boolean,
+) {
   const product = candidate.product;
   const dna = candidate.product_dna;
 
   const role = getProductRole(product, dna);
   let score = 0;
-  const reasons = [];
-  const penalties = [];
+  const reasons: Array<{ code: string; points: number; detail: string }> = [];
+  const penalties: Array<{ code: string; points: number; detail: string }> = [];
   const matched = {
-    skin_types: [],
-    concerns: [],
-    avoid_terms: [],
+    skin_types: [] as string[],
+    concerns: [] as string[],
+    avoid_terms: [] as string[],
   };
 
   if (requestedSteps.includes(role)) {
@@ -296,7 +330,10 @@ function scoreCandidate(candidate, profile, requestedSteps, includeNeedsReview) 
     });
   }
 
-  const concernMatches = overlap(profile.skin_concerns, dna?.main_concerns_it_helps);
+  const concernMatches = overlap(
+    profile.skin_concerns,
+    dna?.main_concerns_it_helps,
+  );
   if (concernMatches.length > 0) {
     const points = SCORE_WEIGHTS.concern_match * concernMatches.length;
     score += points;
@@ -327,7 +364,9 @@ function scoreCandidate(candidate, profile, requestedSteps, includeNeedsReview) 
 
   const sensitivityRisk = normalizeRisk(dna?.sensitivity_risk);
   if (
-    ["sensitive", "high", "very_sensitive"].includes(profile.sensitivity_level) &&
+    ["sensitive", "high", "very_sensitive"].includes(
+      profile.sensitivity_level,
+    ) &&
     riskRank(sensitivityRisk) >= 3
   ) {
     score += SCORE_WEIGHTS.sensitivity_penalty;
@@ -351,7 +390,9 @@ function scoreCandidate(candidate, profile, requestedSteps, includeNeedsReview) 
   const pregnancyCaution = cleanLower(dna?.pregnancy_caution);
   if (
     profile.pregnancy &&
-    ["avoid", "caution", "not_recommended", "doctor_only"].includes(pregnancyCaution)
+    ["avoid", "caution", "not_recommended", "doctor_only"].includes(
+      pregnancyCaution,
+    )
   ) {
     score += SCORE_WEIGHTS.pregnancy_penalty;
     penalties.push({
@@ -374,7 +415,9 @@ function scoreCandidate(candidate, profile, requestedSteps, includeNeedsReview) 
     penalties.push({
       code: "needs_review_penalty",
       points: SCORE_WEIGHTS.needs_review_penalty,
-      detail: `Product DNA is ${approvalStatus || "not approved"} and included only because debug/include_needs_review is enabled.`,
+      detail: `Product DNA is ${
+        approvalStatus || "not approved"
+      } and included only because debug/include_needs_review is enabled.`,
     });
   }
 
@@ -412,7 +455,10 @@ function scoreCandidate(candidate, profile, requestedSteps, includeNeedsReview) 
   };
 }
 
-async function loadPassportProfile(supabase, passportId) {
+async function loadPassportProfile(
+  supabase: UntypedSupabaseClient,
+  passportId: string,
+) {
   if (!passportId) {
     return {
       passport: null,
@@ -452,7 +498,11 @@ async function loadPassportProfile(supabase, passportId) {
   };
 }
 
-async function loadProductDnaRows(supabase, includeNeedsReview, requestedSteps) {
+async function loadProductDnaRows(
+  supabase: UntypedSupabaseClient,
+  includeNeedsReview: boolean,
+  requestedSteps: string[],
+) {
   let query = supabase
     .from("beautydna_product_dna")
     .select("*");
@@ -475,7 +525,10 @@ async function loadProductDnaRows(supabase, includeNeedsReview, requestedSteps) 
   };
 }
 
-async function loadProductsByIds(supabase, productIds) {
+async function loadProductsByIds(
+  supabase: UntypedSupabaseClient,
+  productIds: string[],
+) {
   if (!productIds.length) {
     return {
       data: [],
@@ -495,16 +548,22 @@ async function loadProductsByIds(supabase, productIds) {
   };
 }
 
-function groupRankedByStep(scoredCandidates, requestedSteps, maxProductsPerStep) {
-  const grouped = {};
-  const routine = {};
+function groupRankedByStep(
+  scoredCandidates: ScoredCandidate[],
+  requestedSteps: string[],
+  maxProductsPerStep: number,
+) {
+  const grouped: Record<string, ScoredCandidate[]> = {};
+  const routine: Record<string, ScoredCandidate | null> = {};
 
   for (const step of requestedSteps) {
     const rankedForStep = scoredCandidates
       .filter((candidate) => candidate.product_role === step)
       .sort((a, b) => {
         if (b.score !== a.score) return b.score - a.score;
-        return String(a.product_title || "").localeCompare(String(b.product_title || ""));
+        return String(a.product_title || "").localeCompare(
+          String(b.product_title || ""),
+        );
       })
       .slice(0, maxProductsPerStep);
 
@@ -530,13 +589,11 @@ serve(async (req) => {
     }, 405);
   }
 
-  const expectedKey =
-    Deno.env.get("BEAUTYDNA_INTERNAL_API_KEY") ||
+  const expectedKey = Deno.env.get("BEAUTYDNA_INTERNAL_API_KEY") ||
     Deno.env.get("ATHENA_ADMIN_KEY") ||
     "";
 
-  const suppliedKey =
-    req.headers.get("x-beautydna-internal-key") ||
+  const suppliedKey = req.headers.get("x-beautydna-internal-key") ||
     req.headers.get("x-athena-admin-key") ||
     "";
 
@@ -548,8 +605,7 @@ serve(async (req) => {
   }
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL");
-  const serviceRoleKey =
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ||
+  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ||
     Deno.env.get("SERVICE_ROLE_KEY");
 
   if (!supabaseUrl || !serviceRoleKey) {
@@ -559,10 +615,10 @@ serve(async (req) => {
     }, 500);
   }
 
-  let body;
+  let body: DataRecord;
 
   try {
-    body = await req.json();
+    body = await req.json() as DataRecord;
   } catch (_error) {
     return jsonResponse({
       ok: false,
@@ -571,10 +627,19 @@ serve(async (req) => {
   }
 
   const passportId = cleanString(body.passport_id);
-  const options = body.options || {};
+  const options: DataRecord = body.options && typeof body.options === "object"
+    ? body.options as DataRecord
+    : {};
   const debug = cleanBoolean(options.debug, false);
-  const includeNeedsReview = cleanBoolean(options.include_needs_review, false) || debug;
-  const maxProductsPerStep = readOptionNumber(options, "max_products_per_step", 3, 1, 10);
+  const includeNeedsReview =
+    cleanBoolean(options.include_needs_review, false) || debug;
+  const maxProductsPerStep = readOptionNumber(
+    options,
+    "max_products_per_step",
+    3,
+    1,
+    10,
+  );
 
   const requestedSteps = uniqueArray(
     toLowerArray(options.routine_steps).length
@@ -589,7 +654,7 @@ serve(async (req) => {
     },
   });
 
-  const warnings = [];
+  const warnings: string[] = [];
 
   let passport = null;
   let profile = normalizeProfile(body.profile || {});
@@ -598,28 +663,41 @@ serve(async (req) => {
     const passportResult = await loadPassportProfile(supabase, passportId);
 
     if (passportResult.error) {
-      return jsonResponse({
-        ok: false,
-        version: VERSION,
-        error: "Failed to load BeautyDNA passport.",
-        details: passportResult.error.message,
-        passport_id: passportId,
-      }, passportResult.error.message === "BeautyDNA passport not found." ? 404 : 500);
+      return jsonResponse(
+        {
+          ok: false,
+          version: VERSION,
+          error: "Failed to load BeautyDNA passport.",
+          details: passportResult.error.message,
+          passport_id: passportId,
+        },
+        passportResult.error.message === "BeautyDNA passport not found."
+          ? 404
+          : 500,
+      );
     }
 
     passport = passportResult.passport;
-    profile = passportResult.profile;
+    profile = passportResult.profile!;
   }
 
   if (!profile || profile.skin_type === "unknown") {
-    warnings.push("Profile skin_type is missing or unknown. Scoring will rely more on concerns and routine role.");
+    warnings.push(
+      "Profile skin_type is missing or unknown. Scoring will rely more on concerns and routine role.",
+    );
   }
 
   if (!profile.skin_concerns.length) {
-    warnings.push("Profile has no skin_concerns. Concern scoring will be limited.");
+    warnings.push(
+      "Profile has no skin_concerns. Concern scoring will be limited.",
+    );
   }
 
-  const dnaResult = await loadProductDnaRows(supabase, includeNeedsReview, requestedSteps);
+  const dnaResult = await loadProductDnaRows(
+    supabase,
+    includeNeedsReview,
+    requestedSteps,
+  );
 
   if (dnaResult.error) {
     return jsonResponse({
@@ -656,26 +734,47 @@ serve(async (req) => {
       product: productMap.get(dna.product_id),
       product_dna: dna,
     }))
-    .filter((candidate) => candidate.product)
-    .filter((candidate) => canIncludeProduct(candidate.product, candidate.product_dna, includeNeedsReview));
+    .filter(
+      (
+        candidate,
+      ): candidate is { product: DataRecord; product_dna: DataRecord } =>
+        Boolean(candidate.product),
+    )
+    .filter((candidate) =>
+      canIncludeProduct(
+        candidate.product,
+        candidate.product_dna,
+        includeNeedsReview,
+      )
+    );
 
   const scoredCandidates = candidates
-    .map((candidate) => scoreCandidate(candidate, profile, requestedSteps, includeNeedsReview))
+    .map((candidate) =>
+      scoreCandidate(candidate, profile, requestedSteps, includeNeedsReview)
+    )
     .filter((candidate) => candidate.product_role !== "unknown");
 
-  const grouped = groupRankedByStep(scoredCandidates, requestedSteps, maxProductsPerStep);
+  const grouped = groupRankedByStep(
+    scoredCandidates,
+    requestedSteps,
+    maxProductsPerStep,
+  );
 
   const missingSteps = requestedSteps.filter((step) => !grouped.routine[step]);
 
   if (missingSteps.length > 0) {
-    warnings.push(`No recommendation found for steps: ${missingSteps.join(", ")}.`);
+    warnings.push(
+      `No recommendation found for steps: ${missingSteps.join(", ")}.`,
+    );
   }
 
   if (includeNeedsReview) {
-    warnings.push("include_needs_review/debug mode is enabled. Do not use this output as production customer-facing recommendation without approval filtering.");
+    warnings.push(
+      "include_needs_review/debug mode is enabled. Do not use this output as production customer-facing recommendation without approval filtering.",
+    );
   }
 
-  const response = {
+  const response: DataRecord = {
     ok: true,
     version: VERSION,
     passport_id: passportId || null,
