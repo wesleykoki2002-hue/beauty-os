@@ -1,11 +1,45 @@
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import {
+  createClient,
+  type SupabaseClient,
+} from "https://esm.sh/@supabase/supabase-js@2";
+
+// Recommendation payloads and runtime-selected tables do not have generated types.
+// deno-lint-ignore no-explicit-any
+type DataRecord = Record<string, any>;
+// deno-lint-ignore no-explicit-any
+type UntypedSupabaseClient = SupabaseClient<any, "public", any>;
+type Profile = {
+  skin_type: string;
+  skin_concerns: string[];
+  sensitivity_level: string;
+  acne_prone: boolean;
+  pregnancy: boolean;
+  avoid_ingredients: string[];
+};
+type RoutineItem = { step: string; product_id: string; product: DataRecord };
+type IngredientHighlight = {
+  ingredient_id: unknown;
+  ingredient_name: string;
+  normalized_ingredient_name: string;
+  benefits: string[];
+  explanation: string;
+  evidence_level: unknown;
+};
+type MatchSummary = {
+  matched_skin_types: string[];
+  matched_concerns: string[];
+  routine_step_purpose: string;
+  skin_type_fit: string[];
+  concerns_helped: string[];
+};
 
 const VERSION = "beautydna-v2-recommendation-explain-v1";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-athena-admin-key, x-beautydna-internal-key",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type, x-athena-admin-key, x-beautydna-internal-key",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
@@ -19,13 +53,17 @@ const STEP_LABELS_PT_BR = {
 
 const STEP_PURPOSE_PT_BR = {
   gentle_cleanser: "remove impurezas sem agredir a barreira da pele",
-  hydrating_lotion: "rep\u00f5e hidrata\u00e7\u00e3o leve e prepara a pele para os pr\u00f3ximos passos",
-  barrier_serum: "ajuda a fortalecer a barreira e reduzir sensa\u00e7\u00e3o de ressecamento",
-  moisturizer: "sela a hidrata\u00e7\u00e3o e ajuda a manter conforto ao longo do dia",
-  sunscreen: "protege a pele contra radia\u00e7\u00e3o UV e ajuda a prevenir manchas e sinais de envelhecimento",
+  hydrating_lotion:
+    "rep\u00f5e hidrata\u00e7\u00e3o leve e prepara a pele para os pr\u00f3ximos passos",
+  barrier_serum:
+    "ajuda a fortalecer a barreira e reduzir sensa\u00e7\u00e3o de ressecamento",
+  moisturizer:
+    "sela a hidrata\u00e7\u00e3o e ajuda a manter conforto ao longo do dia",
+  sunscreen:
+    "protege a pele contra radia\u00e7\u00e3o UV e ajuda a prevenir manchas e sinais de envelhecimento",
 };
 
-function jsonResponse(body, status = 200) {
+function jsonResponse(body: unknown, status = 200) {
   return new Response(JSON.stringify(body, null, 2), {
     status,
     headers: {
@@ -35,21 +73,21 @@ function jsonResponse(body, status = 200) {
   });
 }
 
-function cleanString(value) {
+function cleanString(value: unknown): string {
   if (typeof value !== "string") return "";
   return value.trim();
 }
 
-function cleanLower(value) {
+function cleanLower(value: unknown): string {
   return cleanString(value).toLowerCase();
 }
 
-function cleanBoolean(value, fallback = false) {
+function cleanBoolean(value: unknown, fallback = false): boolean {
   if (typeof value === "boolean") return value;
   return fallback;
 }
 
-function toArray(value) {
+function toArray(value: unknown): string[] {
   if (Array.isArray(value)) {
     return value
       .map((item) => cleanString(item))
@@ -66,39 +104,28 @@ function toArray(value) {
   return [];
 }
 
-function toLowerArray(value) {
+function toLowerArray(value: unknown): string[] {
   return toArray(value).map((item) => item.toLowerCase());
 }
 
-function uniqueArray(values) {
+function uniqueArray(values: string[]): string[] {
   return [...new Set((values || []).filter(Boolean))];
 }
 
-function parseJsonMaybe(value, fallback) {
-  if (value === null || value === undefined) return fallback;
-  if (typeof value === "object") return value;
-  if (typeof value !== "string") return fallback;
-
-  try {
-    return JSON.parse(value);
-  } catch (_error) {
-    return fallback;
-  }
-}
-
-function overlap(a, b) {
+function overlap(a: unknown, b: unknown): string[] {
   const aSet = new Set(toLowerArray(a));
   const bSet = new Set(toLowerArray(b));
 
   return [...aSet].filter((item) => bSet.has(item));
 }
 
-function normalizeProfile(inputProfile) {
+function normalizeProfile(
+  inputProfile: DataRecord | null | undefined,
+): Profile {
   const profile = inputProfile || {};
 
   return {
-    skin_type:
-      cleanLower(profile.skin_type) ||
+    skin_type: cleanLower(profile.skin_type) ||
       cleanLower(profile.skinType) ||
       "unknown",
 
@@ -108,8 +135,7 @@ function normalizeProfile(inputProfile) {
       ...toLowerArray(profile.main_concerns),
     ]),
 
-    sensitivity_level:
-      cleanLower(profile.sensitivity_level) ||
+    sensitivity_level: cleanLower(profile.sensitivity_level) ||
       cleanLower(profile.sensitivity) ||
       "unknown",
 
@@ -124,24 +150,25 @@ function normalizeProfile(inputProfile) {
   };
 }
 
-function getStepLabel(step, language = "pt-BR") {
+function getStepLabel(step: string, language = "pt-BR"): string {
   if (language === "pt-BR") {
-    return STEP_LABELS_PT_BR[step] || step;
+    return STEP_LABELS_PT_BR[step as keyof typeof STEP_LABELS_PT_BR] || step;
   }
 
   return step;
 }
 
-function getStepPurpose(step, language = "pt-BR") {
+function getStepPurpose(step: string, language = "pt-BR"): string {
   if (language === "pt-BR") {
-    return STEP_PURPOSE_PT_BR[step] || "tem uma funﾃｧﾃ｣o especﾃｭfica na rotina personalizada";
+    return STEP_PURPOSE_PT_BR[step as keyof typeof STEP_PURPOSE_PT_BR] ||
+      "tem uma funﾃｧﾃ｣o especﾃｭfica na rotina personalizada";
   }
 
   return "has a specific role in the personalized routine";
 }
 
-function extractRoutineItems(routine) {
-  const items = [];
+function extractRoutineItems(routine: unknown): RoutineItem[] {
+  const items: RoutineItem[] = [];
 
   if (!routine || typeof routine !== "object") {
     return items;
@@ -150,26 +177,26 @@ function extractRoutineItems(routine) {
   for (const [step, product] of Object.entries(routine)) {
     if (!product || typeof product !== "object") continue;
 
-    const productId =
-      product.product_id ||
-      product.id ||
-      product.product?.id ||
+    const row = product as DataRecord;
+    const productId = row.product_id ||
+      row.id ||
+      row.product?.id ||
       null;
 
     if (!productId) continue;
 
     items.push({
       step,
-      product_id: productId,
-      product,
+      product_id: String(productId),
+      product: row,
     });
   }
 
   return items;
 }
 
-function extractRankedItems(rankedProducts) {
-  const items = [];
+function extractRankedItems(rankedProducts: unknown): RoutineItem[] {
+  const items: RoutineItem[] = [];
 
   if (!rankedProducts || typeof rankedProducts !== "object") {
     return items;
@@ -181,18 +208,18 @@ function extractRankedItems(rankedProducts) {
     for (const product of products) {
       if (!product || typeof product !== "object") continue;
 
-      const productId =
-        product.product_id ||
-        product.id ||
-        product.product?.id ||
+      const row = product as DataRecord;
+      const productId = row.product_id ||
+        row.id ||
+        row.product?.id ||
         null;
 
       if (!productId) continue;
 
       items.push({
         step,
-        product_id: productId,
-        product,
+        product_id: String(productId),
+        product: row,
       });
     }
   }
@@ -200,7 +227,7 @@ function extractRankedItems(rankedProducts) {
   return items;
 }
 
-function getProductTitle(product) {
+function getProductTitle(product: DataRecord): string {
   return (
     cleanString(product?.product_title) ||
     cleanString(product?.title) ||
@@ -209,11 +236,15 @@ function getProductTitle(product) {
   );
 }
 
-function getProductBrand(product) {
+function getProductBrand(product: DataRecord): string {
   return cleanString(product?.brand);
 }
 
-function getProductRole(step, product, productDna) {
+function getProductRole(
+  step: string,
+  product: DataRecord,
+  productDna: DataRecord,
+): string {
   return (
     cleanLower(productDna?.recommended_routine_step) ||
     cleanLower(product?.product_role) ||
@@ -224,22 +255,22 @@ function getProductRole(step, product, productDna) {
   );
 }
 
-function getDnaArray(productDna, fieldName, fallbackProduct, fallbackFieldName) {
+function getDnaArray(
+  productDna: DataRecord,
+  fieldName: string,
+  fallbackProduct: DataRecord,
+  fallbackFieldName?: string,
+): string[] {
   const fromDna = toArray(productDna?.[fieldName]);
 
   if (fromDna.length) return fromDna;
 
-  return toArray(fallbackProduct?.product_dna?.[fallbackFieldName || fieldName]);
-}
-
-function getDnaString(productDna, fieldName, fallbackProduct, fallbackFieldName) {
-  return (
-    cleanString(productDna?.[fieldName]) ||
-    cleanString(fallbackProduct?.product_dna?.[fallbackFieldName || fieldName])
+  return toArray(
+    fallbackProduct?.product_dna?.[fallbackFieldName || fieldName],
   );
 }
 
-function getIngredientBenefits(ingredient) {
+function getIngredientBenefits(ingredient: DataRecord): string[] {
   return uniqueArray([
     ...toArray(ingredient?.benefits),
     ...toArray(ingredient?.benefit_tags),
@@ -248,7 +279,7 @@ function getIngredientBenefits(ingredient) {
   ]);
 }
 
-function getIngredientExplanation(ingredient) {
+function getIngredientExplanation(ingredient: DataRecord): string {
   return (
     cleanString(ingredient?.short_explanation) ||
     cleanString(ingredient?.explanation_short) ||
@@ -258,8 +289,12 @@ function getIngredientExplanation(ingredient) {
   );
 }
 
-function buildIngredientHighlights(productIngredientLinks, ingredientMap, maxHighlights = 4) {
-  const highlights = [];
+function buildIngredientHighlights(
+  productIngredientLinks: DataRecord[],
+  ingredientMap: Map<unknown, DataRecord>,
+  maxHighlights = 4,
+): IngredientHighlight[] {
+  const highlights: IngredientHighlight[] = [];
 
   for (const link of productIngredientLinks) {
     if (!link?.ingredient_id) continue;
@@ -267,8 +302,7 @@ function buildIngredientHighlights(productIngredientLinks, ingredientMap, maxHig
     const ingredient = ingredientMap.get(link.ingredient_id);
     if (!ingredient) continue;
 
-    const ingredientName =
-      cleanString(ingredient.ingredient_name) ||
+    const ingredientName = cleanString(ingredient.ingredient_name) ||
       cleanString(link.ingredient_name);
 
     if (!ingredientName) continue;
@@ -276,8 +310,7 @@ function buildIngredientHighlights(productIngredientLinks, ingredientMap, maxHig
     highlights.push({
       ingredient_id: ingredient.id,
       ingredient_name: ingredientName,
-      normalized_ingredient_name:
-        cleanString(ingredient.normalized_name) ||
+      normalized_ingredient_name: cleanString(ingredient.normalized_name) ||
         cleanString(ingredient.normalized_ingredient_name) ||
         cleanString(link.normalized_ingredient_name),
       benefits: getIngredientBenefits(ingredient),
@@ -293,23 +326,42 @@ function buildIngredientHighlights(productIngredientLinks, ingredientMap, maxHig
   return highlights;
 }
 
-function buildCautions(profile, productDna, ingredientHighlights) {
-  const cautions = [];
+function buildCautions(
+  profile: Profile,
+  productDna: DataRecord,
+  ingredientHighlights: IngredientHighlight[],
+): string[] {
+  const cautions: string[] = [];
 
   const sensitivityRisk = cleanLower(productDna?.sensitivity_risk);
   const comedogenicRisk = cleanLower(productDna?.comedogenic_risk);
   const pregnancyCaution = cleanLower(productDna?.pregnancy_caution);
 
-  if (["sensitive", "high", "very_sensitive"].includes(profile.sensitivity_level) && sensitivityRisk === "high") {
-    cautions.push("Este produto tem risco de sensibilidade alto para uma pele sens\u00edvel.");
+  if (
+    ["sensitive", "high", "very_sensitive"].includes(
+      profile.sensitivity_level,
+    ) && sensitivityRisk === "high"
+  ) {
+    cautions.push(
+      "Este produto tem risco de sensibilidade alto para uma pele sens\u00edvel.",
+    );
   }
 
   if (profile.acne_prone && comedogenicRisk === "high") {
-    cautions.push("Este produto tem risco comedog\u00eanico alto para uma pele com tend\u00eancia \u00e0 acne.");
+    cautions.push(
+      "Este produto tem risco comedog\u00eanico alto para uma pele com tend\u00eancia \u00e0 acne.",
+    );
   }
 
-  if (profile.pregnancy && ["avoid", "caution", "not_recommended", "doctor_only"].includes(pregnancyCaution)) {
-    cautions.push("Este produto tem observa\u00e7\u00e3o de cautela para gravidez.");
+  if (
+    profile.pregnancy &&
+    ["avoid", "caution", "not_recommended", "doctor_only"].includes(
+      pregnancyCaution,
+    )
+  ) {
+    cautions.push(
+      "Este produto tem observa\u00e7\u00e3o de cautela para gravidez.",
+    );
   }
 
   const avoidTerms = profile.avoid_ingredients || [];
@@ -320,7 +372,9 @@ function buildCautions(profile, productDna, ingredientHighlights) {
 
     for (const avoidTerm of avoidTerms) {
       if (normalized.includes(avoidTerm) || name.includes(avoidTerm)) {
-        cautions.push(`Aten\u00e7\u00e3o: este produto cont\u00e9m ${ingredient.ingredient_name}, que aparece na lista de ingredientes a evitar.`);
+        cautions.push(
+          `Aten\u00e7\u00e3o: este produto cont\u00e9m ${ingredient.ingredient_name}, que aparece na lista de ingredientes a evitar.`,
+        );
       }
     }
   }
@@ -328,9 +382,19 @@ function buildCautions(profile, productDna, ingredientHighlights) {
   return uniqueArray(cautions);
 }
 
-function buildMatchSummary(profile, productDna, product, step, language) {
+function buildMatchSummary(
+  profile: Profile,
+  productDna: DataRecord,
+  product: DataRecord,
+  step: string,
+  language: string,
+): MatchSummary {
   const skinTypeFit = getDnaArray(productDna, "skin_type_fit", product);
-  const concernsHelped = getDnaArray(productDna, "main_concerns_it_helps", product);
+  const concernsHelped = getDnaArray(
+    productDna,
+    "main_concerns_it_helps",
+    product,
+  );
   const matchedSkinTypes = overlap([profile.skin_type], skinTypeFit);
   const matchedConcerns = overlap(profile.skin_concerns, concernsHelped);
 
@@ -352,14 +416,25 @@ function buildShortExplanation({
   matchSummary,
   ingredientHighlights,
   language,
-}) {
+}: {
+  productTitle: string;
+  brand: string;
+  stepLabel: string;
+  matchSummary: MatchSummary;
+  ingredientHighlights: IngredientHighlight[];
+  language: string;
+}): string {
   const brandText = brand ? ` da ${brand}` : "";
   const concernText = matchSummary.matched_concerns.length
     ? ` ajuda em ${matchSummary.matched_concerns.join(", ")}`
     : " combina com o perfil da sua rotina";
 
   const ingredientText = ingredientHighlights.length
-    ? ` Destaque: ${ingredientHighlights.slice(0, 2).map((item) => item.ingredient_name).join(" + ")}.`
+    ? ` Destaque: ${
+      ingredientHighlights.slice(0, 2).map((item) => item.ingredient_name).join(
+        " + ",
+      )
+    }.`
     : "";
 
   if (language === "pt-BR") {
@@ -380,32 +455,48 @@ function buildLongExplanation({
   cautions,
   style,
   language,
-}) {
+}: {
+  productTitle: string;
+  brand: string;
+  stepLabel: string;
+  profile: Profile;
+  productDna: DataRecord;
+  matchSummary: MatchSummary;
+  ingredientHighlights: IngredientHighlight[];
+  cautions: string[];
+  style: string;
+  language: string;
+}): string {
   const brandText = brand ? ` da ${brand}` : "";
 
   const skinText = matchSummary.matched_skin_types.length
-    ? `Ele combina com o tipo de pele ${matchSummary.matched_skin_types.join(", ")} informado no perfil.`
+    ? `Ele combina com o tipo de pele ${
+      matchSummary.matched_skin_types.join(", ")
+    } informado no perfil.`
     : "Ele foi escolhido pela fun\u00e7\u00e3o na rotina e pelos dados de Product DNA dispon\u00edveis.";
 
   const concernText = matchSummary.matched_concerns.length
-    ? `Tamb\u00e9m conversa com as principais necessidades detectadas: ${matchSummary.matched_concerns.join(", ")}.`
+    ? `Tamb\u00e9m conversa com as principais necessidades detectadas: ${
+      matchSummary.matched_concerns.join(", ")
+    }.`
     : profile.skin_concerns.length
-      ? "Ainda n\u00e3o h\u00e1 correspond\u00eancia perfeita de preocupa\u00e7\u00e3o nos dados, ent\u00e3o a escolha foi guiada principalmente pelo papel do produto na rotina."
-      : "Como o perfil n\u00e3o trouxe preocupa\u00e7\u00f5es espec\u00edficas, a escolha foi guiada pelo papel do produto na rotina.";
+    ? "Ainda n\u00e3o h\u00e1 correspond\u00eancia perfeita de preocupa\u00e7\u00e3o nos dados, ent\u00e3o a escolha foi guiada principalmente pelo papel do produto na rotina."
+    : "Como o perfil n\u00e3o trouxe preocupa\u00e7\u00f5es espec\u00edficas, a escolha foi guiada pelo papel do produto na rotina.";
 
   const ingredientText = ingredientHighlights.length
-    ? `Ingredientes aprovados em destaque: ${ingredientHighlights.map((item) => {
+    ? `Ingredientes aprovados em destaque: ${
+      ingredientHighlights.map((item) => {
         const explanation = item.explanation ? ` (${item.explanation})` : "";
         return `${item.ingredient_name}${explanation}`;
-      }).join("; ")}.`
+      }).join("; ")
+    }.`
     : "Ainda n\u00e3o h\u00e1 ingredientes aprovados suficientes para gerar uma explica\u00e7\u00e3o de ingredientes para o cliente.";
 
   const cautionText = cautions.length
     ? `Pontos de aten\u00e7\u00e3o: ${cautions.join(" ")}`
     : "Nenhum ponto de aten\u00e7\u00e3o importante foi encontrado com os dados aprovados dispon\u00edveis.";
 
-  const matchNotes =
-    cleanString(productDna?.beautydna_match_notes) ||
+  const matchNotes = cleanString(productDna?.beautydna_match_notes) ||
     cleanString(productDna?.source_summary);
 
   const notesText = matchNotes && style !== "simple"
@@ -419,7 +510,10 @@ function buildLongExplanation({
   return `${productTitle}${brandText} was recommended for ${stepLabel}. ${skinText} ${concernText} ${ingredientText} ${cautionText}${notesText}`;
 }
 
-async function loadProductDnaByProductIds(supabase, productIds) {
+async function loadProductDnaByProductIds(
+  supabase: UntypedSupabaseClient,
+  productIds: string[],
+) {
   if (!productIds.length) {
     return { data: [], error: null };
   }
@@ -431,12 +525,15 @@ async function loadProductDnaByProductIds(supabase, productIds) {
     .limit(500);
 
   return {
-    data: data || [],
+    data: (data || []) as DataRecord[],
     error,
   };
 }
 
-async function loadProductIngredientsByProductIds(supabase, productIds) {
+async function loadProductIngredientsByProductIds(
+  supabase: UntypedSupabaseClient,
+  productIds: string[],
+) {
   if (!productIds.length) {
     return { data: [], error: null };
   }
@@ -449,12 +546,15 @@ async function loadProductIngredientsByProductIds(supabase, productIds) {
     .limit(1000);
 
   return {
-    data: data || [],
+    data: (data || []) as DataRecord[],
     error,
   };
 }
 
-async function loadApprovedIngredientsByIds(supabase, ingredientIds) {
+async function loadApprovedIngredientsByIds(
+  supabase: UntypedSupabaseClient,
+  ingredientIds: string[],
+) {
   if (!ingredientIds.length) {
     return { data: [], error: null };
   }
@@ -467,7 +567,7 @@ async function loadApprovedIngredientsByIds(supabase, ingredientIds) {
     .limit(1000);
 
   return {
-    data: data || [],
+    data: (data || []) as DataRecord[],
     error,
   };
 }
@@ -484,13 +584,11 @@ serve(async (req) => {
     }, 405);
   }
 
-  const expectedKey =
-    Deno.env.get("BEAUTYDNA_INTERNAL_API_KEY") ||
+  const expectedKey = Deno.env.get("BEAUTYDNA_INTERNAL_API_KEY") ||
     Deno.env.get("ATHENA_ADMIN_KEY") ||
     "";
 
-  const suppliedKey =
-    req.headers.get("x-beautydna-internal-key") ||
+  const suppliedKey = req.headers.get("x-beautydna-internal-key") ||
     req.headers.get("x-athena-admin-key") ||
     "";
 
@@ -502,8 +600,7 @@ serve(async (req) => {
   }
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL");
-  const serviceRoleKey =
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ||
+  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ||
     Deno.env.get("SERVICE_ROLE_KEY");
 
   if (!supabaseUrl || !serviceRoleKey) {
@@ -513,10 +610,10 @@ serve(async (req) => {
     }, 500);
   }
 
-  let body;
+  let body: DataRecord;
 
   try {
-    body = await req.json();
+    body = await req.json() as DataRecord;
   } catch (_error) {
     return jsonResponse({
       ok: false,
@@ -526,7 +623,8 @@ serve(async (req) => {
 
   const profile = normalizeProfile(body.profile || {});
   const routine = body.routine || body.recommendation?.routine || {};
-  const rankedProducts = body.ranked_products || body.recommendation?.ranked_products || {};
+  const rankedProducts = body.ranked_products ||
+    body.recommendation?.ranked_products || {};
   const options = body.options || {};
 
   const debug = cleanBoolean(options.debug, false);
@@ -543,7 +641,8 @@ serve(async (req) => {
     return jsonResponse({
       ok: false,
       version: VERSION,
-      error: "No recommended products found. Send routine or ranked_products from the recommendation engine.",
+      error:
+        "No recommended products found. Send routine or ranked_products from the recommendation engine.",
     }, 400);
   }
 
@@ -565,7 +664,10 @@ serve(async (req) => {
     }, 500);
   }
 
-  const productIngredientResult = await loadProductIngredientsByProductIds(supabase, productIds);
+  const productIngredientResult = await loadProductIngredientsByProductIds(
+    supabase,
+    productIds,
+  );
 
   if (productIngredientResult.error) {
     return jsonResponse({
@@ -582,7 +684,10 @@ serve(async (req) => {
       .filter(Boolean),
   );
 
-  const ingredientResult = await loadApprovedIngredientsByIds(supabase, approvedIngredientIds);
+  const ingredientResult = await loadApprovedIngredientsByIds(
+    supabase,
+    approvedIngredientIds,
+  );
 
   if (ingredientResult.error) {
     return jsonResponse({
@@ -597,30 +702,31 @@ serve(async (req) => {
     dnaResult.data.map((dna) => [dna.product_id, dna]),
   );
 
-  const productIngredientsByProductId = new Map();
+  const productIngredientsByProductId = new Map<string, DataRecord[]>();
 
   for (const link of productIngredientResult.data) {
     if (!productIngredientsByProductId.has(link.product_id)) {
       productIngredientsByProductId.set(link.product_id, []);
     }
 
-    productIngredientsByProductId.get(link.product_id).push(link);
+    productIngredientsByProductId.get(link.product_id)!.push(link);
   }
 
-  const ingredientMap = new Map(
+  const ingredientMap = new Map<unknown, DataRecord>(
     ingredientResult.data.map((ingredient) => [ingredient.id, ingredient]),
   );
 
-  const explanations = {};
-  const ingredientHighlightsByStep = {};
-  const cautionsByStep = {};
-  const warnings = [];
+  const explanations: Record<string, DataRecord> = {};
+  const ingredientHighlightsByStep: Record<string, IngredientHighlight[]> = {};
+  const cautionsByStep: Record<string, string[]> = {};
+  const warnings: string[] = [];
 
   for (const item of routineItems) {
     const step = item.step;
     const product = item.product;
     const productId = item.product_id;
-    const productDna = dnaByProductId.get(productId) || product.product_dna || {};
+    const productDna = dnaByProductId.get(productId) || product.product_dna ||
+      {};
 
     const role = getProductRole(step, product, productDna);
     const stepLabel = getStepLabel(role, language);
@@ -629,12 +735,24 @@ serve(async (req) => {
     const brand = getProductBrand(product);
 
     const links = productIngredientsByProductId.get(productId) || [];
-    const ingredientHighlights = buildIngredientHighlights(links, ingredientMap, 4);
-    const matchSummary = buildMatchSummary(profile, productDna, product, role, language);
+    const ingredientHighlights = buildIngredientHighlights(
+      links,
+      ingredientMap,
+      4,
+    );
+    const matchSummary = buildMatchSummary(
+      profile,
+      productDna,
+      product,
+      role,
+      language,
+    );
     const cautions = buildCautions(profile, productDna, ingredientHighlights);
 
     if (!ingredientHighlights.length) {
-      warnings.push(`No approved Ingredient Intelligence highlights found for ${productTitle}.`);
+      warnings.push(
+        `No approved Ingredient Intelligence highlights found for ${productTitle}.`,
+      );
     }
 
     explanations[step] = {
@@ -676,7 +794,7 @@ serve(async (req) => {
     cautionsByStep[step] = cautions;
   }
 
-  const response = {
+  const response: DataRecord = {
     ok: true,
     version: VERSION,
     profile,
@@ -689,8 +807,10 @@ serve(async (req) => {
       routine_products: routineItems.length,
       unique_products_seen: productIds.length,
       product_dna_rows_loaded: dnaResult.data.length,
-      approved_product_ingredient_links_loaded: productIngredientResult.data.length,
-      approved_ingredient_intelligence_rows_loaded: ingredientResult.data.length,
+      approved_product_ingredient_links_loaded:
+        productIngredientResult.data.length,
+      approved_ingredient_intelligence_rows_loaded:
+        ingredientResult.data.length,
     },
     explanations,
     ingredient_highlights: ingredientHighlightsByStep,
@@ -706,7 +826,8 @@ serve(async (req) => {
       product_dna_rows: dnaResult.data,
       approved_product_ingredient_links: productIngredientResult.data,
       approved_ingredients_loaded: ingredientResult.data,
-      note: "Debug output is founder-facing only. Customer-facing claims should only use the explanations and approved ingredient highlights.",
+      note:
+        "Debug output is founder-facing only. Customer-facing claims should only use the explanations and approved ingredient highlights.",
     };
   }
 
