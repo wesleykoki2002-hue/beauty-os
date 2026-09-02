@@ -1,13 +1,39 @@
-﻿import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
+import {
+  createClient,
+  type SupabaseClient,
+} from "https://esm.sh/@supabase/supabase-js@2";
+
+// Review payloads and runtime-selected tables do not have generated types.
+// deno-lint-ignore no-explicit-any
+type DataRecord = Record<string, any>;
+// deno-lint-ignore no-explicit-any
+type UntypedSupabaseClient = SupabaseClient<any, "public", any>;
+type DatabaseError = { message: string };
+type MutationResult = {
+  data: DataRecord | null;
+  error: DatabaseError | null;
+  removed_columns: string[];
+};
+type MutationManyResult = {
+  data: DataRecord[];
+  error: DatabaseError | null;
+  removed_columns: string[];
+};
+type ManyUpdateBuilder = {
+  select: (
+    columns: string,
+  ) => PromiseLike<{ data: DataRecord[] | null; error: DatabaseError | null }>;
+};
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-athena-admin-key, x-beautydna-internal-key",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type, x-athena-admin-key, x-beautydna-internal-key",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-function jsonResponse(body, status = 200) {
+function jsonResponse(body: unknown, status = 200) {
   return new Response(JSON.stringify(body, null, 2), {
     status,
     headers: {
@@ -17,22 +43,22 @@ function jsonResponse(body, status = 200) {
   });
 }
 
-function cleanString(value) {
+function cleanString(value: unknown): string {
   if (typeof value !== "string") return "";
   return value.trim();
 }
 
-function cleanArray(value) {
+function cleanArray(value: unknown): string[] {
   if (!Array.isArray(value)) return [];
   return value.map((item) => cleanString(item)).filter(Boolean);
 }
 
-function cleanBoolean(value, fallback = false) {
+function cleanBoolean(value: unknown, fallback = false): boolean {
   if (typeof value === "boolean") return value;
   return fallback;
 }
 
-function normalizeEvidenceLevel(value) {
+function normalizeEvidenceLevel(value: unknown): string {
   const allowedEvidenceLevels = new Set([
     "low",
     "medium",
@@ -48,7 +74,7 @@ function normalizeEvidenceLevel(value) {
   return "medium";
 }
 
-function normalizeIngredientName(value) {
+function normalizeIngredientName(value: unknown): string {
   return cleanString(value)
     .toLowerCase()
     .replace(/\s+/g, " ")
@@ -56,8 +82,9 @@ function normalizeIngredientName(value) {
     .trim();
 }
 
-function getUnknownColumnName(message) {
-  if (!message) return null;
+function getUnknownColumnName(message: unknown): string | null {
+  const cleanMessage = cleanString(message);
+  if (!cleanMessage) return null;
 
   const patterns = [
     /Could not find the '([^']+)' column/i,
@@ -66,16 +93,21 @@ function getUnknownColumnName(message) {
   ];
 
   for (const pattern of patterns) {
-    const match = message.match(pattern);
+    const match = cleanMessage.match(pattern);
     if (match?.[1]) return match[1];
   }
 
   return null;
 }
 
-async function insertWithColumnFallback(supabase, tableName, payload, selectColumns = "*") {
-  let safePayload = { ...payload };
-  const removedColumns = [];
+async function insertWithColumnFallback(
+  supabase: UntypedSupabaseClient,
+  tableName: string,
+  payload: DataRecord,
+  selectColumns = "*",
+): Promise<MutationResult> {
+  const safePayload = { ...payload };
+  const removedColumns: string[] = [];
 
   for (let attempt = 0; attempt < 25; attempt += 1) {
     const { data, error } = await supabase
@@ -86,7 +118,7 @@ async function insertWithColumnFallback(supabase, tableName, payload, selectColu
 
     if (!error) {
       return {
-        data,
+        data: data as DataRecord,
         error: null,
         removed_columns: removedColumns,
       };
@@ -108,14 +140,22 @@ async function insertWithColumnFallback(supabase, tableName, payload, selectColu
 
   return {
     data: null,
-    error: { message: `Too many missing columns while inserting into ${tableName}.` },
+    error: {
+      message: `Too many missing columns while inserting into ${tableName}.`,
+    },
     removed_columns: removedColumns,
   };
 }
 
-async function updateWithColumnFallback(supabase, tableName, id, payload, selectColumns = "*") {
-  let safePayload = { ...payload };
-  const removedColumns = [];
+async function updateWithColumnFallback(
+  supabase: UntypedSupabaseClient,
+  tableName: string,
+  id: unknown,
+  payload: DataRecord,
+  selectColumns = "*",
+): Promise<MutationResult> {
+  const safePayload = { ...payload };
+  const removedColumns: string[] = [];
 
   for (let attempt = 0; attempt < 25; attempt += 1) {
     const { data, error } = await supabase
@@ -127,7 +167,7 @@ async function updateWithColumnFallback(supabase, tableName, id, payload, select
 
     if (!error) {
       return {
-        data,
+        data: data as DataRecord,
         error: null,
         removed_columns: removedColumns,
       };
@@ -154,12 +194,18 @@ async function updateWithColumnFallback(supabase, tableName, id, payload, select
   };
 }
 
-async function updateManyWithColumnFallback(queryBuilder, payload, selectColumns = "*") {
-  let safePayload = { ...payload };
-  const removedColumns = [];
+async function updateManyWithColumnFallback(
+  queryBuilder: (payload: DataRecord) => ManyUpdateBuilder,
+  payload: DataRecord,
+  selectColumns = "*",
+): Promise<MutationManyResult> {
+  const safePayload = { ...payload };
+  const removedColumns: string[] = [];
 
   for (let attempt = 0; attempt < 25; attempt += 1) {
-    const { data, error } = await queryBuilder(safePayload).select(selectColumns);
+    const { data, error } = await queryBuilder(safePayload).select(
+      selectColumns,
+    );
 
     if (!error) {
       return {
@@ -185,44 +231,61 @@ async function updateManyWithColumnFallback(queryBuilder, payload, selectColumns
 
   return {
     data: [],
-    error: { message: "Too many missing columns while updating matching records." },
+    error: {
+      message: "Too many missing columns while updating matching records.",
+    },
     removed_columns: removedColumns,
   };
 }
 
-async function findExistingIngredient(supabase, normalizedName) {
+async function findExistingIngredient(
+  supabase: UntypedSupabaseClient,
+  normalizedName: string,
+) {
   const direct = await supabase
     .from("beautydna_ingredient_intelligence")
-    .select("id, ingredient_name, normalized_name, normalized_ingredient_name, review_status")
+    .select(
+      "id, ingredient_name, normalized_name, normalized_ingredient_name, review_status",
+    )
     .eq("normalized_name", normalizedName)
     .limit(1)
     .maybeSingle();
 
   if (!direct.error && direct.data) {
-    return { data: direct.data, error: null };
+    return { data: direct.data as DataRecord, error: null };
   }
 
   const fallback = await supabase
     .from("beautydna_ingredient_intelligence")
-    .select("id, ingredient_name, normalized_name, normalized_ingredient_name, review_status")
+    .select(
+      "id, ingredient_name, normalized_name, normalized_ingredient_name, review_status",
+    )
     .eq("normalized_ingredient_name", normalizedName)
     .limit(1)
     .maybeSingle();
 
   if (!fallback.error && fallback.data) {
-    return { data: fallback.data, error: null };
+    return { data: fallback.data as DataRecord, error: null };
   }
 
-  if (direct.error && !String(direct.error.message || "").includes("normalized_name")) {
+  if (
+    direct.error &&
+    !String(direct.error.message || "").includes("normalized_name")
+  ) {
     return { data: null, error: direct.error };
   }
 
   return { data: null, error: null };
 }
 
-function buildIngredientPayload(queueRecord, ingredientInput, action, reviewedBy, notes) {
-  const ingredientName =
-    cleanString(ingredientInput.ingredient_name) ||
+function buildIngredientPayload(
+  queueRecord: DataRecord,
+  ingredientInput: DataRecord,
+  action: string,
+  reviewedBy: string,
+  notes: string,
+) {
+  const ingredientName = cleanString(ingredientInput.ingredient_name) ||
     cleanString(queueRecord.ingredient_name);
 
   const normalizedName =
@@ -235,16 +298,20 @@ function buildIngredientPayload(queueRecord, ingredientInput, action, reviewedBy
     normalized_name: normalizedName,
     normalized_ingredient_name: normalizedName,
 
-    ingredient_category: cleanString(ingredientInput.ingredient_category) || "unknown",
+    ingredient_category: cleanString(ingredientInput.ingredient_category) ||
+      "unknown",
 
     benefits: cleanArray(ingredientInput.benefits),
     concerns_helped: cleanArray(ingredientInput.concerns_helped),
     skin_type_fit: cleanArray(ingredientInput.skin_type_fit),
     avoid_for: cleanArray(ingredientInput.avoid_for),
 
-    sensitivity_risk: cleanString(ingredientInput.sensitivity_risk) || "unknown",
-    comedogenic_risk: cleanString(ingredientInput.comedogenic_risk) || "unknown",
-    pregnancy_caution: cleanString(ingredientInput.pregnancy_caution) || "unknown",
+    sensitivity_risk: cleanString(ingredientInput.sensitivity_risk) ||
+      "unknown",
+    comedogenic_risk: cleanString(ingredientInput.comedogenic_risk) ||
+      "unknown",
+    pregnancy_caution: cleanString(ingredientInput.pregnancy_caution) ||
+      "unknown",
 
     fragrance_related: cleanBoolean(ingredientInput.fragrance_related, false),
     alcohol_related: cleanBoolean(ingredientInput.alcohol_related, false),
@@ -282,13 +349,11 @@ serve(async (req) => {
     }, 405);
   }
 
-  const expectedKey =
-    Deno.env.get("BEAUTYDNA_INTERNAL_API_KEY") ||
+  const expectedKey = Deno.env.get("BEAUTYDNA_INTERNAL_API_KEY") ||
     Deno.env.get("ATHENA_ADMIN_KEY") ||
     "";
 
-  const suppliedKey =
-    req.headers.get("x-beautydna-internal-key") ||
+  const suppliedKey = req.headers.get("x-beautydna-internal-key") ||
     req.headers.get("x-athena-admin-key") ||
     "";
 
@@ -300,8 +365,7 @@ serve(async (req) => {
   }
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL");
-  const serviceRoleKey =
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ||
+  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ||
     Deno.env.get("SERVICE_ROLE_KEY");
 
   if (!supabaseUrl || !serviceRoleKey) {
@@ -311,10 +375,10 @@ serve(async (req) => {
     }, 500);
   }
 
-  let body;
+  let body: DataRecord;
 
   try {
-    body = await req.json();
+    body = await req.json() as DataRecord;
   } catch (_error) {
     return jsonResponse({
       ok: false,
@@ -384,9 +448,9 @@ serve(async (req) => {
     }, 400);
   }
 
-  let ingredientRecord = null;
-  let ingredientAction = null;
-  let ingredientRemovedColumns = [];
+  let ingredientRecord: DataRecord | null = null;
+  let ingredientAction: string | null = null;
+  let ingredientRemovedColumns: string[] = [];
 
   if (action === "approve") {
     const ingredientPayload = buildIngredientPayload(
@@ -400,7 +464,10 @@ serve(async (req) => {
       notes,
     );
 
-    const existingIngredientResult = await findExistingIngredient(supabase, normalizedName);
+    const existingIngredientResult = await findExistingIngredient(
+      supabase,
+      normalizedName,
+    );
 
     if (existingIngredientResult.error) {
       return jsonResponse({
@@ -454,33 +521,34 @@ serve(async (req) => {
     }
   }
 
-  const queueUpdatePayload =
-    action === "approve"
-      ? {
-          status: "resolved",
-          resolved_ingredient_id: ingredientRecord?.id || null,
-          assigned_to: reviewedBy,
-          notes: notes || queueRecord.notes || "Approved from BeautyDNA v2 review queue.",
-          metadata: {
-            ...(queueRecord.metadata || {}),
-            resolved_by_function: "beautydna-v2-review-queue-resolve",
-            reviewed_by: reviewedBy,
-            action,
-            resolved_at: new Date().toISOString(),
-          },
-        }
-      : {
-          status: "rejected",
-          assigned_to: reviewedBy,
-          notes: notes || queueRecord.notes || "Rejected from BeautyDNA v2 review queue.",
-          metadata: {
-            ...(queueRecord.metadata || {}),
-            resolved_by_function: "beautydna-v2-review-queue-resolve",
-            reviewed_by: reviewedBy,
-            action,
-            rejected_at: new Date().toISOString(),
-          },
-        };
+  const queueUpdatePayload = action === "approve"
+    ? {
+      status: "resolved",
+      resolved_ingredient_id: ingredientRecord?.id || null,
+      assigned_to: reviewedBy,
+      notes: notes || queueRecord.notes ||
+        "Approved from BeautyDNA v2 review queue.",
+      metadata: {
+        ...(queueRecord.metadata || {}),
+        resolved_by_function: "beautydna-v2-review-queue-resolve",
+        reviewed_by: reviewedBy,
+        action,
+        resolved_at: new Date().toISOString(),
+      },
+    }
+    : {
+      status: "rejected",
+      assigned_to: reviewedBy,
+      notes: notes || queueRecord.notes ||
+        "Rejected from BeautyDNA v2 review queue.",
+      metadata: {
+        ...(queueRecord.metadata || {}),
+        resolved_by_function: "beautydna-v2-review-queue-resolve",
+        reviewed_by: reviewedBy,
+        action,
+        rejected_at: new Date().toISOString(),
+      },
+    };
 
   const queueUpdateResult = await updateWithColumnFallback(
     supabase,
@@ -500,7 +568,7 @@ serve(async (req) => {
     }, 500);
   }
 
-  let productIngredientUpdateResult = {
+  let productIngredientUpdateResult: MutationManyResult = {
     data: [],
     error: null,
     removed_columns: [],
@@ -546,7 +614,8 @@ serve(async (req) => {
         details: productIngredientUpdateResult.error.message,
         ingredient: ingredientRecord,
         queue_record: queueUpdateResult.data,
-        removed_product_ingredient_columns: productIngredientUpdateResult.removed_columns,
+        removed_product_ingredient_columns:
+          productIngredientUpdateResult.removed_columns,
       }, 500);
     }
   }
@@ -561,11 +630,12 @@ serve(async (req) => {
     ingredient_id: ingredientRecord?.id || null,
     ingredient: ingredientRecord,
     queue_record: queueUpdateResult.data,
-    updated_product_ingredient_count: productIngredientUpdateResult.data?.length || 0,
+    updated_product_ingredient_count:
+      productIngredientUpdateResult.data?.length || 0,
     updated_product_ingredients: productIngredientUpdateResult.data || [],
     removed_ingredient_columns: ingredientRemovedColumns,
     removed_queue_columns: queueUpdateResult.removed_columns,
-    removed_product_ingredient_columns: productIngredientUpdateResult.removed_columns,
+    removed_product_ingredient_columns:
+      productIngredientUpdateResult.removed_columns,
   });
 });
-
