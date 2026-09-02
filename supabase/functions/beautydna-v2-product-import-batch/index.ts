@@ -1,12 +1,35 @@
-﻿import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
+import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-athena-admin-key, x-beautydna-internal-key",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type, x-athena-admin-key, x-beautydna-internal-key",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-function jsonResponse(body, status = 200) {
+type ProductFields = {
+  product_title?: unknown;
+  sku?: unknown;
+  handle?: unknown;
+  [key: string]: unknown;
+};
+
+type BatchItem = {
+  source_key?: unknown;
+  source_type?: unknown;
+  product?: ProductFields;
+  [key: string]: unknown;
+};
+
+type BatchRequest = {
+  products?: unknown;
+  continue_on_error?: unknown;
+  max_items?: unknown;
+  source_type?: unknown;
+  source_key?: unknown;
+};
+
+function jsonResponse(body: unknown, status = 200) {
   return new Response(JSON.stringify(body, null, 2), {
     status,
     headers: {
@@ -16,27 +39,27 @@ function jsonResponse(body, status = 200) {
   });
 }
 
-function cleanString(value) {
+function cleanString(value: unknown): string {
   if (typeof value !== "string") return "";
   return value.trim();
 }
 
-function cleanBoolean(value, fallback = true) {
+function cleanBoolean(value: unknown, fallback = true): boolean {
   if (typeof value === "boolean") return value;
   return fallback;
 }
 
-function cleanNumber(value, fallback = 0) {
+function cleanNumber(value: unknown, fallback = 0): number {
   const numberValue = Number(value);
   if (!Number.isFinite(numberValue)) return fallback;
   return numberValue;
 }
 
-function getProductTitle(item) {
+function getProductTitle(item: BatchItem): string {
   return cleanString(item?.product?.product_title);
 }
 
-function getProductKey(item, index) {
+function getProductKey(item: BatchItem, index: number): string {
   return (
     cleanString(item?.source_key) ||
     cleanString(item?.product?.sku) ||
@@ -58,13 +81,11 @@ serve(async (req) => {
     }, 405);
   }
 
-  const expectedKey =
-    Deno.env.get("BEAUTYDNA_INTERNAL_API_KEY") ||
+  const expectedKey = Deno.env.get("BEAUTYDNA_INTERNAL_API_KEY") ||
     Deno.env.get("ATHENA_ADMIN_KEY") ||
     "";
 
-  const suppliedKey =
-    req.headers.get("x-beautydna-internal-key") ||
+  const suppliedKey = req.headers.get("x-beautydna-internal-key") ||
     req.headers.get("x-athena-admin-key") ||
     "";
 
@@ -84,10 +105,10 @@ serve(async (req) => {
     }, 500);
   }
 
-  let body;
+  let body: BatchRequest;
 
   try {
-    body = await req.json();
+    body = await req.json() as BatchRequest;
   } catch (_error) {
     return jsonResponse({
       ok: false,
@@ -95,25 +116,31 @@ serve(async (req) => {
     }, 400);
   }
 
-  const products = Array.isArray(body.products) ? body.products : [];
+  const products = Array.isArray(body.products)
+    ? body.products as BatchItem[]
+    : [];
   const continueOnError = cleanBoolean(body.continue_on_error, true);
   const requestedMaxItems = cleanNumber(body.max_items, 25);
   const maxItems = Math.min(Math.max(requestedMaxItems, 1), 50);
 
-  const sourceType = cleanString(body.source_type) || "beautydna-v2-product-import-batch";
-  const sourceKey = cleanString(body.source_key) || `batch-${new Date().toISOString()}`;
+  const sourceType = cleanString(body.source_type) ||
+    "beautydna-v2-product-import-batch";
+  const sourceKey = cleanString(body.source_key) ||
+    `batch-${new Date().toISOString()}`;
 
   if (products.length === 0) {
     return jsonResponse({
       ok: false,
-      error: "products array is required and must contain at least one product import payload.",
+      error:
+        "products array is required and must contain at least one product import payload.",
     }, 400);
   }
 
   if (products.length > maxItems) {
     return jsonResponse({
       ok: false,
-      error: `Batch size too large. Received ${products.length}, max allowed for this request is ${maxItems}.`,
+      error:
+        `Batch size too large. Received ${products.length}, max allowed for this request is ${maxItems}.`,
       received_count: products.length,
       max_items: maxItems,
     }, 400);
@@ -195,7 +222,8 @@ serve(async (req) => {
           return jsonResponse({
             ok: false,
             version: "beautydna-v2-product-import-batch-v1",
-            error: "Batch stopped after first failed product because continue_on_error is false.",
+            error:
+              "Batch stopped after first failed product because continue_on_error is false.",
             total_count: products.length,
             processed_count: index + 1,
             success_count: successCount,
@@ -227,8 +255,12 @@ serve(async (req) => {
       }
 
       const ingestionCounts = importResult.ingredient_ingestion?.counts || {};
-      totalProductIngredientLinks += Number(ingestionCounts.product_ingredient_link_count || 0);
-      totalReviewQueueInserted += Number(ingestionCounts.review_queue_inserted_count || 0);
+      totalProductIngredientLinks += Number(
+        ingestionCounts.product_ingredient_link_count || 0,
+      );
+      totalReviewQueueInserted += Number(
+        ingestionCounts.review_queue_inserted_count || 0,
+      );
 
       results.push({
         index,
@@ -240,16 +272,19 @@ serve(async (req) => {
         product_dna_id: importResult.product_dna_id,
         ingredient_ingestion_counts: ingestionCounts,
         removed_product_columns: importResult.removed_product_columns || [],
-        removed_product_dna_columns: importResult.removed_product_dna_columns || [],
+        removed_product_dna_columns: importResult.removed_product_dna_columns ||
+          [],
       });
-    } catch (error) {
+    } catch (error: unknown) {
       failedCount += 1;
 
       const errorRecord = {
         index,
         product_title: productTitle,
         source_key: payload.source_key,
-        error: error?.message || "Unexpected batch item error.",
+        error: error instanceof Error
+          ? error.message
+          : "Unexpected batch item error.",
       };
 
       errors.push(errorRecord);
@@ -266,7 +301,8 @@ serve(async (req) => {
         return jsonResponse({
           ok: false,
           version: "beautydna-v2-product-import-batch-v1",
-          error: "Batch stopped after unexpected product error because continue_on_error is false.",
+          error:
+            "Batch stopped after unexpected product error because continue_on_error is false.",
           total_count: products.length,
           processed_count: index + 1,
           success_count: successCount,
