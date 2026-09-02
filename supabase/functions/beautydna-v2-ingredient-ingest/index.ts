@@ -1,13 +1,19 @@
-﻿import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
+import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-athena-admin-key, x-beautydna-internal-key",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type, x-athena-admin-key, x-beautydna-internal-key",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-function jsonResponse(body, status = 200) {
+type NormalizedIngredient = {
+  original_name: string;
+  normalized_name: string;
+};
+
+function jsonResponse(body: unknown, status = 200) {
   return new Response(JSON.stringify(body, null, 2), {
     status,
     headers: {
@@ -17,12 +23,12 @@ function jsonResponse(body, status = 200) {
   });
 }
 
-function cleanString(value) {
+function cleanString(value: unknown): string {
   if (typeof value !== "string") return "";
   return value.trim();
 }
 
-function normalizeIngredientName(value) {
+function normalizeIngredientName(value: unknown): string {
   return cleanString(value)
     .toLowerCase()
     .replace(/\s+/g, " ")
@@ -30,11 +36,11 @@ function normalizeIngredientName(value) {
     .trim();
 }
 
-function uniqueIngredients(values) {
+function uniqueIngredients(values: unknown): NormalizedIngredient[] {
   if (!Array.isArray(values)) return [];
 
-  const seen = new Set();
-  const result = [];
+  const seen = new Set<string>();
+  const result: NormalizedIngredient[] = [];
 
   for (const value of values) {
     const cleaned = cleanString(value);
@@ -64,13 +70,11 @@ serve(async (req) => {
     }, 405);
   }
 
-  const expectedKey =
-    Deno.env.get("BEAUTYDNA_INTERNAL_API_KEY") ||
+  const expectedKey = Deno.env.get("BEAUTYDNA_INTERNAL_API_KEY") ||
     Deno.env.get("ATHENA_ADMIN_KEY") ||
     "";
 
-  const suppliedKey =
-    req.headers.get("x-beautydna-internal-key") ||
+  const suppliedKey = req.headers.get("x-beautydna-internal-key") ||
     req.headers.get("x-athena-admin-key") ||
     "";
 
@@ -82,8 +86,7 @@ serve(async (req) => {
   }
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL");
-  const serviceRoleKey =
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ||
+  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ||
     Deno.env.get("SERVICE_ROLE_KEY");
 
   if (!supabaseUrl || !serviceRoleKey) {
@@ -105,9 +108,11 @@ serve(async (req) => {
   }
 
   const productId = cleanString(body.product_id);
-  const sourceType = cleanString(body.source_type) || "beautydna-v2-ingredient-ingest";
+  const sourceType = cleanString(body.source_type) ||
+    "beautydna-v2-ingredient-ingest";
   const sourceKey = cleanString(body.source_key) || productId || "manual";
-  const createReviewTasksForMissing = body.create_review_tasks_for_missing !== false;
+  const createReviewTasksForMissing =
+    body.create_review_tasks_for_missing !== false;
   const ingredients = uniqueIngredients(body.ingredient_names);
 
   if (!productId) {
@@ -190,16 +195,19 @@ serve(async (req) => {
   }
 
   const aliasIngredientIds = [
-    ...new Set((aliasRows || []).map((row) => row.ingredient_id).filter(Boolean)),
+    ...new Set(
+      (aliasRows || []).map((row) => row.ingredient_id).filter(Boolean),
+    ),
   ];
 
   let aliasIngredientById = new Map();
 
   if (aliasIngredientIds.length > 0) {
-    const { data: aliasIngredientRows, error: aliasIngredientError } = await supabase
-      .from("beautydna_ingredient_intelligence")
-      .select("id, ingredient_name, normalized_name, review_status")
-      .in("id", aliasIngredientIds);
+    const { data: aliasIngredientRows, error: aliasIngredientError } =
+      await supabase
+        .from("beautydna_ingredient_intelligence")
+        .select("id, ingredient_name, normalized_name, review_status")
+        .in("id", aliasIngredientIds);
 
     if (aliasIngredientError) {
       return jsonResponse({
@@ -210,7 +218,7 @@ serve(async (req) => {
     }
 
     aliasIngredientById = new Map(
-      (aliasIngredientRows || []).map((row) => [row.id, row])
+      (aliasIngredientRows || []).map((row) => [row.id, row]),
     );
   }
 
@@ -329,7 +337,8 @@ serve(async (req) => {
         source_type: sourceType,
         source_key: sourceKey,
         product_id: productId,
-        notes: "Missing ingredient found during BeautyDNA v2 ingredient ingestion.",
+        notes:
+          "Missing ingredient found during BeautyDNA v2 ingredient ingestion.",
         metadata: {
           product_title: product.product_title,
           product_role: product.product_role,
@@ -376,11 +385,11 @@ serve(async (req) => {
   }
 
   const approvedMatchCount = matchedIngredients.filter(
-    (item) => item.match_type === "approved_match"
+    (item) => item.match_type === "approved_match",
   ).length;
 
   const aliasMatchCount = matchedIngredients.filter(
-    (item) => item.match_type === "alias_match"
+    (item) => item.match_type === "alias_match",
   ).length;
 
   return jsonResponse({
